@@ -8,7 +8,7 @@ user_data = {}
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.reply_to(message,
-                 "سلام عزیزم من ربات رخساره ی خوشگل آقا وحیدم  🥰\nبه بخش ثبت سفارش مزووایت صورت خوش اومدی.\nلطفاً اسم کاملت رو بفرست.")
+                 "سلام عزیزم من ربات رخساره ی خوشگل 🥰 آقا وحیدم \nبه بخش ثبت سفارش مزووایت صورت خوش اومدی.\nلطفاً اسم کاملت رو بفرست.")
 
 @bot.message_handler(func=lambda m: True)
 def collect_info(message):
