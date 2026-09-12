@@ -8,7 +8,7 @@ user_data = {}
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.reply_to(message,
-                 "سلام عزیزم 🌸\nبه بخش ثبت سفارش مزووایت صورت خوش اومدی.\nلطفاً اسم کاملت رو بفرست.")
+                 "سلام عزیزم ربات رخساره ی آقا وحیدم  🥰\nبه بخش ثبت سفارش مزووایت صورت خوش اومدی.\nلطفاً اسم کاملت رو بفرست.")
 
 @bot.message_handler(func=lambda m: True)
 def collect_info(message):
@@ -32,11 +32,11 @@ def collect_info(message):
         time = user_data[chat_id]["time"]
 
         bot.send_message(chat_id,
-                         f"عالیه عزیزم 🌸\nثبت شد:\n"
+                         f" عزیزم 😃\nنوبتت ثبت شد:\n"
                          f"نام: {name}\n"
                          f"شماره: {phone}\n"
                          f"زمان نوبت: {time}\n"
-                         f"به زودی باهات تماس می‌گیریم ❤️")
+                         f"به زودی باهات تماس می‌گیریم 🌹")
 
         # ارسال اطلاعات به مدیر
         admin_id = 8070693669  # آیدی عددی مدیر
