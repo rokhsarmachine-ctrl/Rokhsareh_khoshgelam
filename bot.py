@@ -1,4 +1,4 @@
-  import telebot
+import telebot
 
 TOKEN ="8834409229:AAGRsS9_rzgdtg8JxLQ2aqSpyVN3i0HISV0"
 bot = telebot.TeleBot(TOKEN)
@@ -39,7 +39,7 @@ def collect_info(message):
                          f"به زودی باهات تماس می‌گیریم ❤️")
 
         # ارسال اطلاعات به مدیر
-        admin_id = 123456789  # آیدی عددی مدیر
+        admin_id = 8070693669  # آیدی عددی مدیر
         bot.send_message(admin_id,
                          f"یک سفارش جدید مزووایت ثبت شد:\n"
                          f"نام: {name}\n"
