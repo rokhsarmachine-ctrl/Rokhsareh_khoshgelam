@@ -130,7 +130,7 @@ def collect_info(message):
     # مرحله ۳: دریافت زمان نوبت
     if "time" not in user_data[chat_id]:
         user_data[chat_id]["time"] = message.text
-        bot.send_message(chat_id, "اگر دوست داری، یک عکس از صورتت رو بفرست تا بررسی کنم 😃")
+        bot.send_message(chat_id, " برای ثبت درخواست ، یک عکس از صورتت رو بفرست تا بررسی کنم 😃")
         return
 
     # مرحله ۴: دریافت عکس صور
