@@ -110,7 +110,7 @@ def back_to_main(message):
 def register_start(message):
     chat_id = message.chat.id
     user_data[chat_id] = {}
-    bot.send_message(chat_id, "اسم کاملت رو بفرست عزیزم 🌹")
+    bot.send_message(chat_id, "اسم کاملت رو بفرست عزیزم 🌸")
 
 # -----------------------------
 # مراحل ثبت سفارش (عکس اختیاری)
@@ -131,7 +131,7 @@ def collect_info(message):
     # مرحله ۲: شماره تماس
     if "phone" not in user_data[chat_id]:
         user_data[chat_id]["phone"] = message.text
-        bot.send_message(chat_id, "چه زمانی دوست داری نوبت مزووایت داشته باشی؟ (مثلاً: فردا ساعت ۷)")
+        bot.send_message(chat_id, "چه زمانی دوست داری نوبت مزووایت داشته باشی؟ (مثلاً: فردا ساعت ۵)")
         return
 
     # مرحله ۳: زمان نوبت
@@ -139,7 +139,7 @@ def collect_info(message):
         user_data[chat_id]["time"] = message.text
         bot.send_message(
             chat_id,
-           " اگر دوست داری یه عکس از صورتت بفرست تا بررسی کنم  🌹\n\n"
+            "اگر دوست داری، یک عکس از صورتت بفرست تا بررسی کنم ه🌹\n\n"
             "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام»"
         )
         return
@@ -176,7 +176,7 @@ def collect_info(message):
         if user_data[chat_id]["photo"] is not None:
             bot.send_photo(ADMIN_ID, user_data[chat_id]["photo"])
 
-        bot.send_message(chat_id, "عالیه عزیزم 🌹 سفارش ثبت شد. به زودی باهات تماس می‌گیریم 😃")
+        bot.send_message(chat_id, "عالیه عزیزم🌹 سفارش ثبت شد. به زودی باهات تماس می‌گیریم😃")
 
         user_data.pop(chat_id)
         return
