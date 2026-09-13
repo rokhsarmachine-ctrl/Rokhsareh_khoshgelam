@@ -140,7 +140,7 @@ def collect_info(message):
         bot.send_message(
             chat_id,
             "اگر دوست داری، یک عکس از صورتت بفرست تا بررسی کنم 🌹\n\n"
-            "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام»"
+            "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام تا درخواستت بدون عکس ثبت بشه»"
         )
         return
 
@@ -156,7 +156,7 @@ def collect_info(message):
             user_data[chat_id]["photo"] = None
 
         else:
-            bot.send_message(chat_id, "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام» 🌸")
+            bot.send_message(chat_id, " اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام تا درخواستت بدون عکس ثبت بشه» 😊")
             return
 
         # ارسال اطلاعات به مدیر
@@ -176,7 +176,7 @@ def collect_info(message):
         if user_data[chat_id]["photo"] is not None:
             bot.send_photo(ADMIN_ID, user_data[chat_id]["photo"])
 
-        bot.send_message(chat_id, "عالیه عزیزم 🌹 سفارش ثبت شد. به زودی باهات تماس می‌گیریم😃")
+        bot.send_message(chat_id, "عالیه عزیزم 🌹 سفارش ثبت شد. به زودی باهات تماس می‌گیرم😃")
 
         user_data.pop(chat_id)
         return
