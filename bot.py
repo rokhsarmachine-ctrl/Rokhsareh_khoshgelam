@@ -37,7 +37,7 @@ def mesowhite_menu():
 def start(message):
     bot.send_message(
         message.chat.id,
-        "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانوم خوشگل🥰 آقا وحید خوش اومدی.\nاز منوی زیر انتخاب کن:",
+        "سلام عزیزم 🌹\nبه ربات خدمات مزووایت رخساره خانوم خوشگل🥰 آقا وحید خوش اومدی.\nاز منوی زیر انتخاب کن:",
         reply_markup=main_menu()
     )
 
@@ -56,7 +56,7 @@ def show_mesowhite_menu(message):
 def benefits(message):
     bot.send_message(
         message.chat.id,
-        "✨ مزایای مزووایت:\n"
+        "✨😃 مزایای مزووایت:\n"
         "- روشن شدن پوست\n"
         "- کاهش لک و تیرگی\n"
         "- آبرسانی عمیق\n"
@@ -91,7 +91,7 @@ def materials(message):
 def back_to_main(message):
     bot.send_message(
         message.chat.id,
-        "به منوی اصلی برگشتی 🌸",
+        "به منوی اصلی برگشتی 🔵",
         reply_markup=main_menu()
     )
 
@@ -102,7 +102,7 @@ def back_to_main(message):
 def register_start(message):
     chat_id = message.chat.id
     user_data[chat_id] = {}
-    bot.send_message(chat_id, "اسم کاملت رو بفرست عزیزم 🌸")
+    bot.send_message(chat_id, "اسم کاملت رو بفرست عزیزم 🌹")
 
 # -----------------------------
 # دریافت اطلاعات مرحله‌به‌مرحله
@@ -145,20 +145,20 @@ def collect_info(message):
         bot.send_message(
             ADMIN_ID,
             f"📩 یک سفارش جدید مزووایت ثبت شد:\n\n"
-            f"👤 نام: {name}\n"
+            f"🙍‍♀️ نام: {name}\n"
             f"📱 شماره: {phone}\n"
             f"⏰ زمان نوبت: {time}"
         )
 
         bot.send_photo(ADMIN_ID, user_data[chat_id]["photo"])
 
-        bot.send_message(chat_id, "عالیه عزیزم 🌸 سفارش ثبت شد. به زودی باهات تماس می‌گیریم ❤️")
+        bot.send_message(chat_id, "عالیه عزیزم 🌹 سفارش ثبت شد. به زودی باهات تماس می‌گیریم 😃")
 
         user_data.pop(chat_id)
         return
 
     # اگر عکس نفرستاد و پیام متنی داد
-    bot.send_message(chat_id, "لطفاً عکس صورتت رو بفرست عزیزم 🌸")
+    bot.send_message(chat_id, "لطفاً عکس صورتت رو بفرست عزیزم 😊")
 
 # -----------------------------
 # اجرای ربات
