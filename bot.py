@@ -30,16 +30,18 @@ def mesowhite_menu():
     return menu
 
 # -----------------------------
-# شروع ربات + نمایش لوگو
+# شروع ربات + نمایش لوگو (اختیاری)
 # -----------------------------
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    # ارسال لوگو
+    # تلاش برای ارسال لوگو بدون هیچ پیام خطا
     try:
         photo = open("logo.jpg", "rb")
         bot.send_photo(message.chat.id, photo)
-    
+    except:
+        pass  # اگر فایل نبود، هیچ کاری نکن
+
     # پیام خوش‌آمدگویی
     bot.send_message(
         message.chat.id,
@@ -62,7 +64,7 @@ def show_mesowhite_menu(message):
 def benefits(message):
     bot.send_message(
         message.chat.id,
-        "✨ مزایای مزووایت:\n"
+        "😃✨ مزایای مزووایت:\n"
         "- روشن شدن پوست\n"
         "- کاهش لک و تیرگی\n"
         "- آبرسانی عمیق\n"
@@ -78,7 +80,7 @@ def side_effects(message):
         "- قرمزی موقت\n"
         "- حساسیت خفیف\n"
         "- خشکی پوست\n"
-        "این موارد معمولاً کوتاه‌مدت هستند 🌸"
+        "این موارد معمولاً کوتاه‌مدت هستند 🌹"
     )
 
 @bot.message_handler(func=lambda m: m.text == "مواد مورد استفاده")
@@ -108,7 +110,7 @@ def back_to_main(message):
 def register_start(message):
     chat_id = message.chat.id
     user_data[chat_id] = {}
-    bot.send_message(chat_id, "اسم کاملت رو بفرست عزیزم 🌸")
+    bot.send_message(chat_id, "اسم کاملت رو بفرست عزیزم 🌹")
 
 # -----------------------------
 # مراحل ثبت سفارش (عکس اختیاری)
@@ -137,7 +139,7 @@ def collect_info(message):
         user_data[chat_id]["time"] = message.text
         bot.send_message(
             chat_id,
-            "اگر دوست داری، یک عکس از صورتت بفرست تا بررسی کنم ه🌹\n\n"
+            "اگر دوست داری، یک عکس از صورتت بفرست تا بررسی کنم 🌹\n\n"
             "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام»"
         )
         return
@@ -154,7 +156,7 @@ def collect_info(message):
             user_data[chat_id]["photo"] = None
 
         else:
-            bot.send_message(chat_id, "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام» 🌹")
+            bot.send_message(chat_id, "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام» 🌸")
             return
 
         # ارسال اطلاعات به مدیر
@@ -174,7 +176,7 @@ def collect_info(message):
         if user_data[chat_id]["photo"] is not None:
             bot.send_photo(ADMIN_ID, user_data[chat_id]["photo"])
 
-        bot.send_message(chat_id, "عالیه عزیزم🌹 سفارش ثبت شد. به زودی باهات تماس می‌گیریم😃")
+        bot.send_message(chat_id, "عالیه عزیزم 🌹 سفارش ثبت شد. به زودی باهات تماس می‌گیریم😃")
 
         user_data.pop(chat_id)
         return
