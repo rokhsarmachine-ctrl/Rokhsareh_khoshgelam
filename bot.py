@@ -37,8 +37,7 @@ def mesowhite_menu():
 def start(message):
     bot.send_message(
         message.chat.id,
-        "سلام عزیزم 🌸\nبه ربات خدمات مزووایت خوش اومدی.\nاز منوی زیر انتخاب کن:",
-        reply_markup=main_menu()
+        "سلام عزیزم من ربات تلگرامی رخساره خانوم خوشگل🥰 آقا وحیدم 🌸\"
     )
 
 # -----------------------------
