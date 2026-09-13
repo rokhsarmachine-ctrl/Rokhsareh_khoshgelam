@@ -39,9 +39,7 @@ def start(message):
     try:
         photo = open("logo.jpg", "rb")
         bot.send_photo(message.chat.id, photo)
-    except:
-        bot.send_message(message.chat.id, "⚠️ لوگو پیدا نشد! فایل logo.jpg را کنار ربات قرار بده.")
-
+    
     # پیام خوش‌آمدگویی
     bot.send_message(
         message.chat.id,
