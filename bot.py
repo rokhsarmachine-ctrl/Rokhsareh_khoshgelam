@@ -1,8 +1,7 @@
-import os
 import telebot
 from telebot import types
 
-TOKEN ="8834409229:AAGRsS9_rzgdtg8JxLQ2aqSpyVN3i0HISV0"
+TOKEN = "8834409229:AAGRsS9_rzgdtg8JxLQ2aqSpyVN3i0HISV0"
 bot = telebot.TeleBot(TOKEN)
 
 ADMIN_ID = 8070693669   # آیدی مدیر
@@ -31,10 +30,19 @@ def mesowhite_menu():
     return menu
 
 # -----------------------------
-# شروع ربات
+# شروع ربات + نمایش لوگو
 # -----------------------------
 @bot.message_handler(commands=['start'])
 def start(message):
+
+    # ارسال لوگو
+    try:
+        photo = open("logo.jpg", "rb")
+        bot.send_photo(message.chat.id, photo)
+    except:
+        bot.send_message(message.chat.id, "⚠️ لوگو پیدا نشد! فایل logo.jpg را کنار ربات قرار بده.")
+
+    # پیام خوش‌آمدگویی
     bot.send_message(
         message.chat.id,
         "سلام عزیزم 🌹\nبه ربات خدمات مزووایت رخساره خانوم 🥰 خوش اومدی.\nاز منوی زیر انتخاب کن:",
@@ -42,7 +50,7 @@ def start(message):
     )
 
 # -----------------------------
-# منوی معرفی خدمات
+# معرفی خدمات
 # -----------------------------
 @bot.message_handler(func=lambda m: m.text == "معرفی خدمات مزووایت")
 def show_mesowhite_menu(message):
@@ -56,7 +64,7 @@ def show_mesowhite_menu(message):
 def benefits(message):
     bot.send_message(
         message.chat.id,
-        "✨😃 مزایای مزووایت:\n"
+        "✨ مزایای مزووایت:\n"
         "- روشن شدن پوست\n"
         "- کاهش لک و تیرگی\n"
         "- آبرسانی عمیق\n"
@@ -71,15 +79,15 @@ def side_effects(message):
         "⚠️ عوارض احتمالی مزووایت:\n"
         "- قرمزی موقت\n"
         "- حساسیت خفیف\n"
-        "- خشکی پوست در برخی افراد\n"
-        "این موارد معمولاً کوتاه‌مدت هستند."
+        "- خشکی پوست\n"
+        "این موارد معمولاً کوتاه‌مدت هستند 🌸"
     )
 
 @bot.message_handler(func=lambda m: m.text == "مواد مورد استفاده")
 def materials(message):
     bot.send_message(
         message.chat.id,
-        "🧴 مواد مورد استفاده در مزووایت:\n"
+        "🧴 مواد مورد استفاده:\n"
         "- ویتامین C\n"
         "- گلوتاتیون\n"
         "- کوجیک اسید\n"
@@ -91,7 +99,7 @@ def materials(message):
 def back_to_main(message):
     bot.send_message(
         message.chat.id,
-        "به منوی اصلی برگشتی 🔵",
+        "به منوی اصلی برگشتی عزیزم 🌹",
         reply_markup=main_menu()
     )
 
@@ -105,60 +113,73 @@ def register_start(message):
     bot.send_message(chat_id, "اسم کاملت رو بفرست عزیزم 🌹")
 
 # -----------------------------
-# دریافت اطلاعات مرحله‌به‌مرحله
+# مراحل ثبت سفارش (عکس اختیاری)
 # -----------------------------
 @bot.message_handler(content_types=['text', 'photo'])
 def collect_info(message):
     chat_id = message.chat.id
 
-    # اگر کاربر در حالت ثبت سفارش نیست
     if chat_id not in user_data:
         return
 
-    # مرحله ۱: دریافت نام
+    # مرحله ۱: نام
     if "name" not in user_data[chat_id]:
         user_data[chat_id]["name"] = message.text
         bot.send_message(chat_id, "شماره تماس رو بفرست عزیزم 📱")
         return
 
-    # مرحله ۲: دریافت شماره
+    # مرحله ۲: شماره تماس
     if "phone" not in user_data[chat_id]:
         user_data[chat_id]["phone"] = message.text
-        bot.send_message(chat_id, "چه زمانی دوست داری نوبت مزووایت داشته باشی؟ (مثلاً: فردا ساعت ۵)")
+        bot.send_message(chat_id, "چه زمانی دوست داری نوبت مزووایت داشته باشی؟ (مثلاً: فردا ساعت ۷)")
         return
 
-    # مرحله ۳: دریافت زمان نوبت
+    # مرحله ۳: زمان نوبت
     if "time" not in user_data[chat_id]:
         user_data[chat_id]["time"] = message.text
-        bot.send_message(chat_id, " برای ثبت درخواست ، یک عکس از صورتت رو بفرست تا بررسی کنم 😃")
+        bot.send_message(
+            chat_id,
+           " اگر دوست داری یه عکس از صورتت بفرست تا بررسی کنم  🌹\n\n"
+            "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام»"
+        )
         return
 
-    # مرحله ۴: دریافت عکس صور
-    if message.content_type == "photo":
-        user_data[chat_id]["photo"] = message.photo[-1].file_id
+    # مرحله ۴: عکس اختیاری
+    if "photo" not in user_data[chat_id]:
 
-        # ارسال به مدیر
+        # اگر عکس فرستاد
+        if message.content_type == "photo":
+            user_data[chat_id]["photo"] = message.photo[-1].file_id
+
+        # اگر نوشت "تمام"
+        elif message.text.strip() == "تمام":
+            user_data[chat_id]["photo"] = None
+
+        else:
+            bot.send_message(chat_id, "اگر عکس نمی‌خوای بفرستی، فقط بنویس: «تمام» 🌹")
+            return
+
+        # ارسال اطلاعات به مدیر
         name = user_data[chat_id]["name"]
         phone = user_data[chat_id]["phone"]
         time = user_data[chat_id]["time"]
 
         bot.send_message(
             ADMIN_ID,
-            f"📩 یک سفارش جدید مزووایت ثبت شد:\n\n"
-            f"🙍‍♀️ نام: {name}\n"
+            f"📩 یک سفارش جدید ثبت شد:\n\n"
+            f"👤 نام: {name}\n"
             f"📱 شماره: {phone}\n"
             f"⏰ زمان نوبت: {time}"
         )
 
-        bot.send_photo(ADMIN_ID, user_data[chat_id]["photo"])
+        # اگر عکس وجود داشت، ارسال شود
+        if user_data[chat_id]["photo"] is not None:
+            bot.send_photo(ADMIN_ID, user_data[chat_id]["photo"])
 
         bot.send_message(chat_id, "عالیه عزیزم 🌹 سفارش ثبت شد. به زودی باهات تماس می‌گیریم 😃")
 
         user_data.pop(chat_id)
         return
-
-    # اگر عکس نفرستاد و پیام متنی داد
-    bot.send_message(chat_id, "لطفاً عکس صورتت رو بفرست عزیزم 😊")
 
 # -----------------------------
 # اجرای ربات
