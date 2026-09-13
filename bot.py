@@ -1,6 +1,6 @@
-import os
+#import os
 import telebot
-from telebot import types
+#from telebot import types
 
 TOKEN ="8834409229:AAGRsS9_rzgdtg8JxLQ2aqSpyVN3i0HISV0"
 bot = telebot.TeleBot(TOKEN)
