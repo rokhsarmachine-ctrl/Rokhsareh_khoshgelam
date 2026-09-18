@@ -11,7 +11,7 @@ ADMIN_ID = 8070693669   # آیدی مدیر
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    welcome_text = "به ربلت خدمات مزووایت رخساره خانوم 🥰 خوش اومدی"
+    welcome_text = "به ربات خدمات مزووایت رخساره خانوم 🥰 خوش اومدی"
 
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
