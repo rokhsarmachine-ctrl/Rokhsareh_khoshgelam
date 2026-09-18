@@ -7,13 +7,11 @@ bot = telebot.TeleBot(TOKEN)
 ADMIN_ID = 8070693669   # آیدی مدیر
 
 
-bot = telebot.TeleBot(TOKEN)
-
 # ------------------ شروع ربات ------------------
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    welcome_text = "به ربات خدمات مزووایت رخساره خانوم 🥰 خوش اومدی"
+    welcome_text = "به ربلت خدمات مزووایت رخساره خانوم 🥰 خوش اومدی"
 
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
@@ -50,20 +48,22 @@ def main_menu(chat_id):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
-    if call.data == "reg":
+    data = call.data
+
+    if data == "reg":
         ask_name(call.message)
 
-    elif call.data == "photo":
+    elif data == "photo":
         bot.send_message(call.message.chat.id,
                          "اگر دوست داری، عکس صورتت رو ارسال کن 🌸\n(این بخش کاملاً اختیاری هست)")
 
-    elif call.data == "services":
+    elif data == "services":
         show_services(call.message)
 
-    elif call.data == "about":
+    elif data == "about":
         show_about(call.message)
 
-    elif call.data == "back":
+    elif data == "back":
         main_menu(call.message.chat.id)
 
 # ------------------ ثبت مشخصات ------------------
@@ -73,14 +73,16 @@ def ask_name(message):
     bot.register_next_step_handler(msg, get_name)
 
 def get_name(message):
-    name = message.text
+    name = message.text.strip()
     msg = bot.send_message(message.chat.id, "شماره تماس‌ت رو وارد کن:")
     bot.register_next_step_handler(msg, lambda m: save_info(m, name))
 
 def save_info(message, name):
-    phone = message.text
+    phone = message.text.strip()
+
     bot.send_message(message.chat.id, "اطلاعاتت ثبت شد 🌸")
     bot.send_message(ADMIN_ID, f"ثبت مشخصات جدید:\nنام: {name}\nشماره: {phone}")
+
     main_menu(message.chat.id)
 
 # ------------------ ارسال عکس صورت (اختیاری) ------------------
@@ -89,37 +91,3 @@ def save_info(message, name):
 def forward_photo(message):
     bot.send_message(message.chat.id, "عکس دریافت شد و برای مدیر ارسال شد 🌸")
     bot.forward_message(ADMIN_ID, message.chat.id, message.message_id)
-    main_menu(message.chat.id)
-
-# ------------------ خدمات مزووایت ------------------
-
-def show_services(message):
-    text = (
-        "✨ خدمات مزووایت:\n"
-        "- روشن‌سازی پوست\n"
-        "- کاهش لک و تیرگی\n"
-        "- آبرسانی عمیق\n"
-        "- یکدست‌سازی رنگ پوست\n"
-    )
-    back_button(message.chat.id, text)
-
-# ------------------ درباره مزووایت ------------------
-
-def show_about(message):
-    text = (
-        "مزووایت یک روش درمانی برای روشن‌سازی و شفافیت پوست هست.\n"
-        "با تزریق مواد مغذی و روشن‌کننده، پوست یکدست‌تر و شفاف‌تر میشه."
-    )
-    back_button(message.chat.id, text)
-
-# ------------------ دکمه بازگشت ------------------
-
-def back_button(chat_id, text):
-    markup = types.InlineKeyboardMarkup()
-    back = types.InlineKeyboardButton("⬅️ بازگشت به منوی اصلی", callback_data="back")
-    markup.add(back)
-    bot.send_message(chat_id, text, reply_markup=markup)
-
-# ------------------ اجرا ------------------
-
-bot.infinity_polling()
