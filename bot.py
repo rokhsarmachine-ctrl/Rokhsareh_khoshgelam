@@ -1,192 +1,194 @@
-import telebot
-from telebot import types
+import asyncio
+import sqlite3
+import datetime
+import os
 
+from aiogram import Bot, Dispatcher, types
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.context import FSMContext
+from aiogram.types import ReplyKeyboardMarkup
+
+# ---------------- CONFIG ----------------
 TOKEN = "8834409229:AAGRsS9_rzgdtg8JxLQ2aqSpyVN3i0HISV0"
-bot = telebot.TeleBot(TOKEN)
+ADMIN_ID = 8070693669
+LOGO_PATH = "logo.jpg"  # اگر نبود خطا نمی‌دهد
 
-ADMIN_ID = 8070693669   
+# ---------------- DATABASE ----------------
+conn = sqlite3.connect("mezowhite.db", check_same_thread=False)
+cur = conn.cursor()
 
-    
-# شروع ربات 
+cur.execute("""
+CREATE TABLE IF NOT EXISTS orders(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    name TEXT,
+    phone TEXT,
+    description TEXT,
+    ai_analysis TEXT,
+    photo_path TEXT,
+    date TEXT
+)
+""")
+conn.commit()
 
-@bot.message_handler(commands=['start'])
-def start(message):
-    welcome_text = "به ربات خدمات مزووایت رخساره خانوم خوشگل 🥰 خوش اومدی"
+# ---------------- STATES ----------------
+class OrderState(StatesGroup):
+    name = State()
+    phone = State()
+    description = State()
+    photo = State()
 
-    try:
-        photos = bot.get_user_profile_photos(bot.get_me().id)
-        if photos.total_count > 0:
-            file_id = photos.photos[0][0].file_id
-            bot.send_photo(message.chat.id, file_id, caption=welcome_text)
-        else:
-            bot.send_message(message.chat.id, welcome_text)
-    except:
-        bot.send_message(message.chat.id, welcome_text)
+# ---------------- AI (Copilot Simulation) ----------------
+def copilot_ai_analysis(text):
+    text = text.lower()
 
-    main_menu(message.chat.id)
+    if "لک" in text or "تیرگی" in text:
+        return "تحلیل هوش مصنوعی: پوست دارای لک و تیرگی است. درمان پیشنهادی: مزووایت + لایه‌برداری ملایم + ضدلک شبانه."
 
-# منوی اصلی 
+    if "جوش" in text or "آکنه" in text:
+        return "تحلیل هوش مصنوعی: پوست مستعد آکنه است. درمان پیشنهادی: مزووایت همراه با کنترل چربی و پاکسازی عمقی."
 
-def main_menu(chat_id):
-    markup = types.InlineKeyboardMarkup()
+    if "خشک" in text:
+        return "تحلیل هوش مصنوعی: پوست خشک است. درمان پیشنهادی: مزووایت + آبرسان قوی + سرم هیالورونیک."
 
-    btn1 = types.InlineKeyboardButton("🔵 ثبت مشخصات", callback_data="reg")
-    btn2 = types.InlineKeyboardButton("🟢 ارسال عکس صورت (اختیاری)", callback_data="photo")
-    btn3 = types.InlineKeyboardButton("🟣 خدمات مزووایت", callback_data="services")
-    btn4 = types.InlineKeyboardButton("🟠 درباره مزووایت", callback_data="about")
+    return "تحلیل هوش مصنوعی: نیاز به بررسی بیشتر دارد. مزووایت می‌تواند به روشن‌سازی و یکدست‌سازی پوست کمک کند."
 
-    markup.add(btn1)
-    markup.add(btn2)
-    markup.add(btn3)
-    markup.add(btn4)
+# ---------------- BOT ----------------
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
 
-    bot.send_message(chat_id, "لطفاً یکی از گزینه‌ها را انتخاب کن:", reply_markup=markup)
+# ---------------- START ----------------
+@dp.message(commands=["start"])
+async def start(msg: types.Message):
 
-# هندلر دکمه‌ها
+    # دکمه‌های شکیل دو ستونه
+    kb = ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("✨ ثبت سفارش مزووایت", "📞 تماس با پشتیبانی")
+    kb.add("📸 ارسال عکس پوست", "ℹ️ راهنمای مزووایت")
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_handler(call):
-    data = call.data
+    # نمایش لوگو بدون خطا
+    if os.path.exists(LOGO_PATH):
+        try:
+            await msg.answer_photo(
+                photo=open(LOGO_PATH, "rb"),
+                caption="سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰 خوش اومدی",
+                reply_markup=kb
+            )
+            return
+        except:
+            pass  # هیچ خطایی نمایش داده نمی‌شود
 
-    if data == "reg":
-        ask_name(call.message)
-
-    elif data == "photo":
-        bot.send_message(call.message.chat.id,
-                         "اگر دوست داری، عکس صورتت رو ارسال کن 🌸\n(این بخش کاملاً اختیاری هست)")
-
-    elif data == "services":
-        services_menu(call.message)
-
-    elif data == "about":
-        show_about(call.message)
-
-    elif data == "benefits":
-        show_benefits(call.message)
-
-    elif data == "side_effects":
-        show_side_effects(call.message)
-
-    elif data == "care":
-        show_care(call.message)
-
-    elif data == "back":
-        main_menu(call.message.chat.id)
-
-# منوی خدمات مزووایت
-
-def services_menu(message):
-    markup = types.InlineKeyboardMarkup()
-
-    btn1 = types.InlineKeyboardButton("✨ مزایا مزووایت", callback_data="benefits")
-    btn2 = types.InlineKeyboardButton("⚠️ معایب / عوارض احتمالی", callback_data="side_effects")
-    btn3 = types.InlineKeyboardButton("💆‍♀️ مراقبت‌های لازم بعد از مزووایت", callback_data="care")
-    btn4 = types.InlineKeyboardButton("⬅️ بازگشت", callback_data="back")
-
-    markup.add(btn1)
-    markup.add(btn2)
-    markup.add(btn3)
-    markup.add(btn4)
-
-    bot.send_message(message.chat.id, "بخش مورد نظرت رو انتخاب کن:", reply_markup=markup)
-
-#  مزایا
-
-def show_benefits(message):
-    text = (
-        "✨ **مزایا مزووایت:**\n"
-        "- روشن‌سازی و شفافیت پوست\n"
-        "- کاهش لک، تیرگی و کدری\n"
-        "- آبرسانی عمیق و رفع خشکی\n"
-        "- یکدست شدن رنگ پوست\n"
-        "- تحریک کلاژن‌سازی\n"
-        "- افزایش درخشندگی و لطافت پوست\n"
-    )
-    back_button(message.chat.id, text)
-
-# معایب
-
-def show_side_effects(message):
-    text = (
-        "⚠️ **معایب و عوارض احتمالی مزووایت:**\n"
-        "- قرمزی و التهاب خفیف تا چند ساعت\n"
-        "- خشکی یا پوسته‌پوسته شدن موقت\n"
-        "- احتمال حساسیت در پوست‌های خیلی حساس\n"
-        "- نیاز به چند جلسه برای نتیجه کامل\n"
-        "- ممنوعیت برای افراد باردار یا دارای بیماری پوستی فعال\n"
-    )
-    back_button(message.chat.id, text)
-
-#  مراقبت‌های لازم
-
-def show_care(message):
-    text = (
-        "💆‍♀️ **مراقبت‌های لازم بعد از مزووایت:**\n"
-        "- تا ۲۴ ساعت شست‌وشوی صورت نداشته باش\n"
-        "- از آفتاب مستقیم دوری کن و ضدآفتاب بزن\n"
-        "- از کرم‌های سنگین یا لایه‌بردار استفاده نکن\n"
-        "- تا ۲۴ ساعت آرایش نکن\n"
-        "- آب زیاد بنوش تا آبرسانی پوست بهتر انجام بشه\n"
-        "- اگر قرمزی داشتی، کمپرس سرد کمک می‌کنه\n"
-    )
-    back_button(message.chat.id, text)
-
-#  درباره مزووایت
-
-def show_about(message):
-    text = (
-        "مزووایت یک روش درمانی برای روشن‌سازی و شفافیت پوست هست.\n"
-        "با تزریق مواد مغذی و روشن‌کننده، پوست یکدست‌تر و شفاف‌تر میشه."
-    )
-    back_button(message.chat.id, text)
-
-# ثبت مشخصات
-
-def ask_name(message):
-    msg = bot.send_message(message.chat.id, "نام و نام خانوادگیت رو وارد کن:")
-    bot.register_next_step_handler(msg, get_name)
-
-def get_name(message):
-    name = message.text.strip()
-    msg = bot.send_message(message.chat.id, "شماره تماست رو وارد کن:")
-    bot.register_next_step_handler(msg, lambda m: get_time(m, name))
-
-def get_time(message, name):
-    phone = message.text.strip()
-    msg = bot.send_message(message.chat.id, "چه ساعتی دوست داری درخواستت ثبت بشه؟ (مثلاً: ساعت ۷ عصر)")
-    bot.register_next_step_handler(msg, lambda m: save_info(m, name, phone))
-
-def save_info(message, name, phone):
-    time = message.text.strip()
-
-    bot.send_message(message.chat.id, "اطلاعاتت ثبت شد🌹")
-
-    bot.send_message(
-        ADMIN_ID,
-        f"ثبت درخواست جدید:\n"
-        f"نام: {name}\n"
-        f"شماره: {phone}\n"
-        f"ساعت دلخواه: {time}"
+    # اگر لوگو نبود، فقط متن خوش‌آمدگویی
+    await msg.answer(
+        "سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰 خوش اومدی",
+        reply_markup=kb
     )
 
-    main_menu(message.chat.id)
+# ---------------- ORDER ----------------
+@dp.message(lambda m: m.text == "✨ ثبت سفارش مزووایت")
+async def order_start(msg: types.Message, state: FSMContext):
+    await msg.answer("نام و نام خانوادگی خود را وارد کن:")
+    await state.set_state(OrderState.name)
 
-#  ارسال عکس صورت (اختیاری)
+@dp.message(OrderState.name)
+async def get_name(msg: types.Message, state: FSMContext):
+    await state.update_data(name=msg.text)
+    await msg.answer("شماره تماس را وارد کن:")
+    await state.set_state(OrderState.phone)
 
-@bot.message_handler(content_types=['photo'])
-def forward_photo(message):
-    bot.send_message(message.chat.id, "عکس دریافت شد و برای مدیر ارسال شد 🌹")
-    bot.forward_message(ADMIN_ID, message.chat.id, message.message_id)
-    main_menu(message.chat.id)
+@dp.message(OrderState.phone)
+async def get_phone(msg: types.Message, state: FSMContext):
+    await state.update_data(phone=msg.text)
+    await msg.answer("مشکل پوستی‌ات را توضیح بده (لک، تیرگی، جوش، خشکی و ...):")
+    await state.set_state(OrderState.description)
 
-#  دکمه بازگشت
+@dp.message(OrderState.description)
+async def get_description(msg: types.Message, state: FSMContext):
+    await state.update_data(description=msg.text)
 
-def back_button(chat_id, text):
-    markup = types.InlineKeyboardMarkup()
-    back = types.InlineKeyboardButton("⬅️ بازگشت به منوی اصلی", callback_data="back")
-    markup.add(back)
-    bot.send_message(chat_id, text, reply_markup=markup)
+    ai_result = copilot_ai_analysis(msg.text)
+    await state.update_data(ai_analysis=ai_result)
 
-# اجرا
+    await msg.answer(
+        f"🔍 تحلیل هوش مصنوعی:\n{ai_result}\n\n"
+        "اگر عکس صورت داری ارسال کن.\nاگر نداری بنویس: «ندارم»"
+    )
 
-bot.infinity_polling()  
+    await state.set_state(OrderState.photo)
+
+@dp.message(OrderState.photo, content_types=['photo', 'text'])
+async def get_photo(msg: types.Message, state: FSMContext):
+    data = await state.get_data()
+
+    photo_path = "NO_PHOTO"
+
+    if msg.photo:
+        photo = msg.photo[-1]
+        photo_path = f"files/{photo.file_id}.jpg"
+        await photo.download(photo_path)
+
+    cur.execute("""
+        INSERT INTO orders(user_id, name, phone, description, ai_analysis, photo_path, date)
+        VALUES(?,?,?,?,?,?,?)
+    """, (
+        msg.from_user.id,
+        data["name"],
+        data["phone"],
+        data["description"],
+        data["ai_analysis"],
+        photo_path,
+        datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    ))
+
+    conn.commit()
+
+    await msg.answer(
+        "سفارش مزووایت با موفقیت ثبت شد عزیزم ❤️\n"
+        "تا چند ساعت آینده باهات تماس می‌گیریم."
+    )
+
+    await state.clear()
+
+# ---------------- ADMIN PANEL ----------------
+@dp.message(commands=["admin"])
+async def admin(msg: types.Message):
+    if msg.from_user.id != ADMIN_ID:
+        return
+
+    await msg.answer("📋 لیست سفارش‌های مزووایت:")
+
+    cur.execute("SELECT id, name, phone, description, ai_analysis, photo_path, date FROM orders")
+    rows = cur.fetchall()
+
+    if not rows:
+        await msg.answer("هیچ سفارشی ثبت نشده.")
+        return
+
+    for r in rows:
+        order_id, name, phone, desc, ai, photo_path, date = r
+
+        text = (
+            f"🆔 سفارش: {order_id}\n"
+            f"👤 نام: {name}\n"
+            f"📞 تماس: {phone}\n"
+            f"📄 توضیحات: {desc}\n"
+            f"🤖 تحلیل هوش مصنوعی:\n{ai}\n"
+            f"📅 تاریخ: {date}\n"
+        )
+
+        await msg.answer(text)
+
+        if photo_path != "NO_PHOTO":
+            try:
+                await msg.answer_photo(open(photo_path, "rb"))
+            except:
+                await msg.answer("❗ عکس قابل ارسال نیست.")
+
+# ---------------- RUN ----------------
+async def main():
+    if not os.path.exists("files"):
+        os.mkdir("files")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
