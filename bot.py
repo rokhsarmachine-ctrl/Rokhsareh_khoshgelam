@@ -143,23 +143,23 @@ def show_about(message):
 # ------------------ ثبت مشخصات ------------------
 
 def ask_name(message):
-    msg = bot.send_message(message.chat.id, "نام و نام خانوادگی‌ت رو وارد کن:")
+    msg = bot.send_message(message.chat.id, "نام و نام خانوادگیت رو وارد کن:")
     bot.register_next_step_handler(msg, get_name)
 
 def get_name(message):
     name = message.text.strip()
-    msg = bot.send_message(message.chat.id, "شماره تماس‌ت رو وارد کن:")
+    msg = bot.send_message(message.chat.id, "شماره تماست رو وارد کن:")
     bot.register_next_step_handler(msg, lambda m: get_time(m, name))
 
 def get_time(message, name):
     phone = message.text.strip()
-    msg = bot.send_message(message.chat.id, "چه ساعتی دوست داری درخواستت ثبت بشه؟ (مثلاً: ساعت ۵ عصر)")
+    msg = bot.send_message(message.chat.id, "چه ساعتی دوست داری درخواستت ثبت بشه؟ (مثلاً: ساعت ۷ عصر)")
     bot.register_next_step_handler(msg, lambda m: save_info(m, name, phone))
 
 def save_info(message, name, phone):
     time = message.text.strip()
 
-    bot.send_message(message.chat.id, "اطلاعاتت ثبت شد 🌸")
+    bot.send_message(message.chat.id, "اطلاعاتت ثبت شد🌹")
 
     bot.send_message(
         ADMIN_ID,
@@ -175,7 +175,7 @@ def save_info(message, name, phone):
 
 @bot.message_handler(content_types=['photo'])
 def forward_photo(message):
-    bot.send_message(message.chat.id, "عکس دریافت شد و برای مدیر ارسال شد 🌸")
+    bot.send_message(message.chat.id, "عکس دریافت شد و برای مدیر ارسال شد 🌹")
     bot.forward_message(ADMIN_ID, message.chat.id, message.message_id)
     main_menu(message.chat.id)
 
