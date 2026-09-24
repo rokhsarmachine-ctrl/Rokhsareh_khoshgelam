@@ -4,14 +4,14 @@ from telebot import types
 TOKEN = "8834409229:AAGRsS9_rzgdtg8JxLQ2aqSpyVN3i0HISV0"
 bot = telebot.TeleBot(TOKEN)
 
-ADMIN_ID = 8070693669   # آیدی مدیر
+ADMIN_ID = 8070693669   
 
     
-# ------------------ شروع ربات ------------------
+# شروع ربات 
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    welcome_text = "به ربات خدمات مزووایت رخساره خانوم 🥰 خوش اومدی"
+    welcome_text = "به ربات خدمات مزووایت رخساره خانوم خوشگل 🥰 خوش اومدی"
 
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
@@ -25,7 +25,7 @@ def start(message):
 
     main_menu(message.chat.id)
 
-# ------------------ منوی اصلی ------------------
+# منوی اصلی 
 
 def main_menu(chat_id):
     markup = types.InlineKeyboardMarkup()
@@ -42,7 +42,7 @@ def main_menu(chat_id):
 
     bot.send_message(chat_id, "لطفاً یکی از گزینه‌ها را انتخاب کن:", reply_markup=markup)
 
-# ------------------ هندلر دکمه‌ها ------------------
+# هندلر دکمه‌ها
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
@@ -73,7 +73,7 @@ def callback_handler(call):
     elif data == "back":
         main_menu(call.message.chat.id)
 
-# ------------------ منوی خدمات مزووایت ------------------
+# منوی خدمات مزووایت
 
 def services_menu(message):
     markup = types.InlineKeyboardMarkup()
@@ -90,7 +90,7 @@ def services_menu(message):
 
     bot.send_message(message.chat.id, "بخش مورد نظرت رو انتخاب کن:", reply_markup=markup)
 
-# ------------------ مزایا ------------------
+#  مزایا
 
 def show_benefits(message):
     text = (
@@ -104,7 +104,7 @@ def show_benefits(message):
     )
     back_button(message.chat.id, text)
 
-# ------------------ معایب ------------------
+# معایب
 
 def show_side_effects(message):
     text = (
@@ -117,7 +117,7 @@ def show_side_effects(message):
     )
     back_button(message.chat.id, text)
 
-# ------------------ مراقبت‌های لازم ------------------
+#  مراقبت‌های لازم
 
 def show_care(message):
     text = (
@@ -131,7 +131,7 @@ def show_care(message):
     )
     back_button(message.chat.id, text)
 
-# ------------------ درباره مزووایت ------------------
+#  درباره مزووایت
 
 def show_about(message):
     text = (
@@ -140,7 +140,7 @@ def show_about(message):
     )
     back_button(message.chat.id, text)
 
-# ------------------ ثبت مشخصات ------------------
+# ثبت مشخصات
 
 def ask_name(message):
     msg = bot.send_message(message.chat.id, "نام و نام خانوادگیت رو وارد کن:")
@@ -171,7 +171,7 @@ def save_info(message, name, phone):
 
     main_menu(message.chat.id)
 
-# ------------------ ارسال عکس صورت (اختیاری) ------------------
+#  ارسال عکس صورت (اختیاری)
 
 @bot.message_handler(content_types=['photo'])
 def forward_photo(message):
@@ -179,7 +179,7 @@ def forward_photo(message):
     bot.forward_message(ADMIN_ID, message.chat.id, message.message_id)
     main_menu(message.chat.id)
 
-# ------------------ دکمه بازگشت ------------------
+#  دکمه بازگشت
 
 def back_button(chat_id, text):
     markup = types.InlineKeyboardMarkup()
@@ -187,6 +187,6 @@ def back_button(chat_id, text):
     markup.add(back)
     bot.send_message(chat_id, text, reply_markup=markup)
 
-# ------------------ اجرا ------------------
+# اجرا
 
 bot.infinity_polling()  
