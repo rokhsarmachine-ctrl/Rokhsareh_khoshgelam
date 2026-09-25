@@ -71,7 +71,7 @@ async def start(msg: types.Message):
         try:
             await msg.answer_photo(
                 photo=open(LOGO_PATH, "rb"),
-                caption="سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰 خوش اومدی",
+                caption="سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰  خوش اومدی",
                 reply_markup=kb
             )
             return
@@ -80,7 +80,7 @@ async def start(msg: types.Message):
 
     # اگر لوگو نبود، فقط متن خوش‌آمدگویی
     await msg.answer(
-        "سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰 خوش اومدی",
+        "سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰  خوش اومدی",
         reply_markup=kb
     )
 
