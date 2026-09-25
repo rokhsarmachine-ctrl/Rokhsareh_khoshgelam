@@ -4,6 +4,7 @@ import datetime
 import os
 
 from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardMarkup
@@ -11,7 +12,7 @@ from aiogram.types import ReplyKeyboardMarkup
 # ---------------- CONFIG ----------------
 TOKEN = "8834409229:AAGRsS9_rzgdtg8JxLQ2aqSpyVN3i0HISV0"
 ADMIN_ID = 8070693669
-LOGO_PATH = "logo.jpg"  # اگر نبود خطا نمی‌دهد
+LOGO_PATH = "logo.jpg"
 
 # ---------------- DATABASE ----------------
 conn = sqlite3.connect("mezowhite.db", check_same_thread=False)
@@ -38,49 +39,47 @@ class OrderState(StatesGroup):
     description = State()
     photo = State()
 
-# ---------------- AI (Copilot Simulation) ----------------
+# ---------------- AI ----------------
 def copilot_ai_analysis(text):
     text = text.lower()
 
     if "لک" in text or "تیرگی" in text:
-        return "تحلیل هوش مصنوعی: پوست دارای لک و تیرگی است. درمان پیشنهادی: مزووایت + لایه‌برداری ملایم + ضدلک شبانه."
+        return "تحلیل هوش مصنوعی: پوست دارای لک و تیرگی است."
 
     if "جوش" in text or "آکنه" in text:
-        return "تحلیل هوش مصنوعی: پوست مستعد آکنه است. درمان پیشنهادی: مزووایت همراه با کنترل چربی و پاکسازی عمقی."
+        return "تحلیل هوش مصنوعی: پوست مستعد آکنه است."
 
     if "خشک" in text:
-        return "تحلیل هوش مصنوعی: پوست خشک است. درمان پیشنهادی: مزووایت + آبرسان قوی + سرم هیالورونیک."
+        return "تحلیل هوش مصنوعی: پوست خشک است."
 
-    return "تحلیل هوش مصنوعی: نیاز به بررسی بیشتر دارد. مزووایت می‌تواند به روشن‌سازی و یکدست‌سازی پوست کمک کند."
+    return "تحلیل هوش مصنوعی: نیاز به بررسی بیشتر دارد."
 
 # ---------------- BOT ----------------
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 # ---------------- START ----------------
-@dp.message(commands=["start"])
+@dp.message(Command("start"))
 async def start(msg: types.Message):
 
-    # دکمه‌های شکیل دو ستونه
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("✨ ثبت سفارش مزووایت", "📞 تماس با پشتیبانی")
     kb.add("📸 ارسال عکس پوست", "ℹ️ راهنمای مزووایت")
 
-    # نمایش لوگو بدون خطا
     if os.path.exists(LOGO_PATH):
         try:
-            await msg.answer_photo(
-                photo=open(LOGO_PATH, "rb"),
-                caption="سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰  خوش اومدی",
-                reply_markup=kb
-            )
-            return
+            with open(LOGO_PATH, "rb") as photo:
+                await msg.answer_photo(
+                    photo=photo,
+                    caption="سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰 آقا وحید خوش اومدی",
+                    reply_markup=kb
+                )
+                return
         except:
-            pass  # هیچ خطایی نمایش داده نمی‌شود
+            pass
 
-    # اگر لوگو نبود، فقط متن خوش‌آمدگویی
     await msg.answer(
-        "سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰  خوش اومدی",
+        "سلام عزیزم به ربات تلگرامی خدمات مزووایت رخساره خانوم خوشگل 🥰 آقا وحید خوش اومدی",
         reply_markup=kb
     )
 
@@ -99,7 +98,7 @@ async def get_name(msg: types.Message, state: FSMContext):
 @dp.message(OrderState.phone)
 async def get_phone(msg: types.Message, state: FSMContext):
     await state.update_data(phone=msg.text)
-    await msg.answer("مشکل پوستی‌ات را توضیح بده (لک، تیرگی، جوش، خشکی و ...):")
+    await msg.answer("مشکل پوستی‌ات را توضیح بده:")
     await state.set_state(OrderState.description)
 
 @dp.message(OrderState.description)
@@ -142,20 +141,14 @@ async def get_photo(msg: types.Message, state: FSMContext):
 
     conn.commit()
 
-    await msg.answer(
-        "سفارش مزووایت با موفقیت ثبت شد عزیزم ❤️\n"
-        "تا چند ساعت آینده باهات تماس می‌گیریم."
-    )
-
+    await msg.answer("سفارش مزووایت با موفقیت ثبت شد عزیزم ❤️")
     await state.clear()
 
-# ---------------- ADMIN PANEL ----------------
-@dp.message(commands=["admin"])
+# ---------------- ADMIN ----------------
+@dp.message(Command("admin"))
 async def admin(msg: types.Message):
     if msg.from_user.id != ADMIN_ID:
         return
-
-    await msg.answer("📋 لیست سفارش‌های مزووایت:")
 
     cur.execute("SELECT id, name, phone, description, ai_analysis, photo_path, date FROM orders")
     rows = cur.fetchall()
@@ -167,16 +160,14 @@ async def admin(msg: types.Message):
     for r in rows:
         order_id, name, phone, desc, ai, photo_path, date = r
 
-        text = (
+        await msg.answer(
             f"🆔 سفارش: {order_id}\n"
             f"👤 نام: {name}\n"
             f"📞 تماس: {phone}\n"
             f"📄 توضیحات: {desc}\n"
             f"🤖 تحلیل هوش مصنوعی:\n{ai}\n"
-            f"📅 تاریخ: {date}\n"
+            f"📅 تاریخ: {date}"
         )
-
-        await msg.answer(text)
 
         if photo_path != "NO_PHOTO":
             try:
