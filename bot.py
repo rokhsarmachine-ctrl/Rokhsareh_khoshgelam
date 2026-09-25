@@ -1,4 +1,4 @@
-My Self:
+
 import telebot
 from telebot import types
 
