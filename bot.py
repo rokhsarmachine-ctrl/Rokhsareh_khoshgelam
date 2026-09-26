@@ -46,7 +46,7 @@ def start(message):
     except:
         pass
 
-    bot.send_message(message.chat.id, "🌸 به ربات خدمات مزووایت رخساره خانوم🥰 خوش آمدید 🌸")
+    bot.send_message(message.chat.id, "🌸 به ربات خدمات مزووایت رخساره خانوم 🥰 خوش آمدید 🌸")
 
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai"))
