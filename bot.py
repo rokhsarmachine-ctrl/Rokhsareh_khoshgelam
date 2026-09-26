@@ -16,33 +16,38 @@ def ai_answer(question):
         "Authorization": f"Bearer {AI_API_KEY}",
         "Content-Type": "application/json"
     }
-    data = {
-        "question": question
-    }
+    data = {"question": question}
 
-    response = requests.post(url, headers=headers, json=data)
-    result = response.json()
-
-    return result.get("answer", "متأسفم، نتونستم پاسخ مناسبی پیدا کنم 🌸")
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        result = response.json()
+        return result.get("answer", "متأسفم، نتونستم پاسخ مناسبی پیدا کنم 🌸")
+    except:
+        return "مشکلی در ارتباط با هوش مصنوعی پیش اومد 🌸"
 
 # ---------------- START ----------------
 
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    # تلاش برای ارسال لوگو بدون هیچ پیام خطا
+    # تلاش برای گرفتن عکس پروفایل ربات
     try:
-        with open("logo.jpg", "rb") as photo:
-            bot.send_photo(message.chat.id, photo)
-    except:
-        pass
+        photos = bot.get_user_profile_photos(bot.get_me().id)
 
+        if photos.total_count > 0:
+            file_id = photos.photos[0][0].file_id
+            bot.send_photo(message.chat.id, file_id)
+    except:
+        pass   # هیچ پیام خطایی نمایش داده نشود
+
+    # پیام خوش‌آمدگویی
     bot.send_message(
         message.chat.id,
         "به ربات خدمات مزووایت رخساره خانوم 🥰 خوش اومدی\n"
         "لطفاً یکی از گزینه‌های زیر رو انتخاب کن."
     )
 
+    # دکمه‌های شیشه‌ای
     markup = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai")
     btn2 = types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve")
