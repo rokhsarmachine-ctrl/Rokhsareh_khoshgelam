@@ -4,59 +4,62 @@ import requests
 
 TOKEN = "8557198522:AAEsN08N6TNy_NaBX9vZVVitnQUZYCs8MSs"
 ADMIN_ID = 8070693669
-AI_API_KEY = "YOUR_COPILOT_AI_KEY"
+AI_API_KEY = "YOUR_REAL_AI_KEY"   # کلید واقعی هوش مصنوعی
 
 bot = telebot.TeleBot(TOKEN)
 
 # ---------------- AI TEXT ANSWER ----------------
 
 def ai_answer(question):
-    url = "https://api.copilot.microsoft.com/text/answer"
+    url = "https://api.openai.com/v1/chat/completions"
+
     headers = {
         "Authorization": f"Bearer {AI_API_KEY}",
         "Content-Type": "application/json"
     }
-    data = {"question": question}
+
+    data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": question}
+        ]
+    }
 
     try:
         response = requests.post(url, headers=headers, json=data)
         result = response.json()
-        return result.get("answer", "متأسفم، نتونستم پاسخ مناسبی پیدا کنم 🌸")
-    except:
-        return "مشکلی در ارتباط با هوش مصنوعی پیش اومد 🌸"
+
+        return result["choices"][0]["message"]["content"]
+
+    except Exception as e:
+        return "متأسفم عزیزم، مشکلی در ارتباط با هوش مصنوعی پیش اومد 🌸"
 
 # ---------------- START ----------------
 
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    # تلاش برای گرفتن عکس پروفایل ربات
+    # نمایش عکس پروفایل ربات
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
-
         if photos.total_count > 0:
             file_id = photos.photos[0][0].file_id
             bot.send_photo(message.chat.id, file_id)
     except:
-        pass   # هیچ پیام خطایی نمایش داده نشود
+        pass
 
-    # پیام خوش‌آمدگویی
     bot.send_message(
         message.chat.id,
         "به ربات خدمات مزووایت رخساره خانوم 🥰 خوش اومدی\n"
         "لطفاً یکی از گزینه‌های زیر رو انتخاب کن."
     )
 
-    # دکمه‌های شیشه‌ای
     markup = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai")
-    btn2 = types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve")
-    btn3 = types.InlineKeyboardButton("✨ مزووایت چیست؟", callback_data="info")
-    btn4 = types.InlineKeyboardButton("📞 ارتباط با رخساره خانوم", url="https://t.me/Rokhsareh_Hanum")
-    markup.add(btn1)
-    markup.add(btn2)
-    markup.add(btn3)
-    markup.add(btn4)
+    markup.add(types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai"))
+    markup.add(types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve"))
+    markup.add(types.InlineKeyboardButton("✨ مزووایت چیست؟", callback_data="info"))
+    markup.add(types.InlineKeyboardButton("📞 ارتباط با رخساره خانوم", url="https://t.me/Rokhsareh_Hanum"))
 
     bot.send_message(message.chat.id, "منوی اصلی:", reply_markup=markup)
 
@@ -72,10 +75,7 @@ def callback_handler(call):
         bot.send_message(call.message.chat.id, "سؤال خود را از هوش مصنوعی بپرس:")
 
     elif call.data == "info":
-        bot.send_message(
-            call.message.chat.id,
-            "مزووایت یک روش روشن‌سازی و یکدست‌سازی پوست هست که با مواد مخصوص انجام میشه ✨"
-        )
+        bot.send_message(call.message.chat.id, "مزووایت یک روش روشن‌سازی و یکدست‌سازی پوست هست ✨")
 
     elif call.data == "reserve":
         user_state[call.message.chat.id] = {"step": "name"}
@@ -106,7 +106,7 @@ def state_handler(message):
     elif state["step"] == "phone":
         state["phone"] = message.text
         state["step"] = "date"
-        bot.send_message(message.chat.id, "تاریخ مورد نظر برای نوبت را وارد کنید (مثال: 1403/08/12):")
+        bot.send_message(message.chat.id, "تاریخ مورد نظر برای نوبت را وارد کنید:")
 
     elif state["step"] == "date":
         state["date"] = message.text
