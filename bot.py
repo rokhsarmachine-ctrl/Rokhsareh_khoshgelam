@@ -4,7 +4,7 @@ import requests
 
 # ---------------- CONFIG ----------------
 
-TOKEN = "8557198522:AAEsN08N6TNy_NaBX9vZVVitnQUZYCs8MSs"
+TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
 ADMIN_ID = 8070693669
 
 # ❗ API KEY دیپ‌سیک را اینجا قرار بده
