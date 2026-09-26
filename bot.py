@@ -47,12 +47,15 @@ def start(message):
     except:
         pass
 
-    bot.send_message(message.chat.id, "🌸 به ربات رخساره خانوم خوشگل 🥰خوش آمدید 🌸")
+    bot.send_message(message.chat.id, "🌸 به ربات خدمات مزووایت خوش آمدید 🌸")
 
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai"))
     markup.add(types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve"))
     markup.add(types.InlineKeyboardButton("📸 ارسال عکس صورت", callback_data="photo"))
+    markup.add(types.InlineKeyboardButton("✨ درباره مزووایت", callback_data="about"))
+    markup.add(types.InlineKeyboardButton("⚖️ مزایا و معایب مزووایت", callback_data="pros_cons"))
+
     bot.send_message(message.chat.id, "لطفاً یکی از گزینه‌ها را انتخاب کنید:", reply_markup=markup)
 
 # ---------------- INLINE BUTTONS ----------------
@@ -75,6 +78,28 @@ def callback_handler(call):
     elif call.data == "photo":
         user_state[chat_id] = {"step": "photo"}
         bot.send_message(chat_id, "📸 لطفاً عکس صورت خود را ارسال کنید:")
+
+    elif call.data == "about":
+        bot.send_message(
+            chat_id,
+            "✨ **مزووایت چیست؟**\n\n"
+            "مزووایت یک روش روشن‌سازی و یکدست‌سازی پوست است که با تزریق مواد مغذی و روشن‌کننده، باعث کاهش تیرگی، لک‌ها و کدری پوست می‌شود."
+        )
+
+    elif call.data == "pros_cons":
+        bot.send_message(
+            chat_id,
+            "⚖️ **مزایا و معایب مزووایت**\n\n"
+            "✅ *مزایا:*\n"
+            "• روشن‌سازی پوست\n"
+            "• کاهش لک و تیرگی\n"
+            "• آبرسانی و شفافیت\n"
+            "• یکدست شدن رنگ پوست\n\n"
+            "❌ *معایب:*\n"
+            "• نیاز به چند جلسه برای نتیجه کامل\n"
+            "• احتمال قرمزی موقت\n"
+            "• مناسب نبودن برای برخی پوست‌های حساس"
+        )
 
 # ---------------- MESSAGE HANDLER ----------------
 
