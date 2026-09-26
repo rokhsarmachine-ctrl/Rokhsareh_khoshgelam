@@ -4,26 +4,25 @@ import requests
 
 # ---------------- CONFIG ----------------
 
-TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
+TOKEN = "8557198522:AAEsN08N6TNy_NaBX9vZVVitnQUZYCs8MSs"
 ADMIN_ID = 8070693669
 
-# ❗ API KEY را اینجا قرار بده
-AI_API_KEY = "sk-24f38cc1f46143f88297c4c530b870bc"
+# ❗ API KEY دیپ‌سیک را اینجا قرار بده
+AI_API_KEY = "YOUR_DEEPSEEK_API_KEY"
 
 bot = telebot.TeleBot(TOKEN)
 
-# ---------------- AI ANSWER ----------------
+# ---------------- AI (DeepSeek) ----------------
 
 def ai_answer(question):
-    url = "https://api.openai.com/v1/chat/completions"
+    url = "https://api.deepseek.com/chat/completions"
     headers = {
         "Authorization": f"Bearer {AI_API_KEY}",
         "Content-Type": "application/json"
     }
     data = {
-        "model": "gpt-4o-mini",
+        "model": "deepseek-chat",
         "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": question}
         ]
     }
@@ -83,13 +82,13 @@ def callback_handler(call):
         bot.send_message(
             chat_id,
             "✨ **مزووایت چیست؟**\n\n"
-            "مزووایت یک روش روشن‌سازی و یکدست‌سازی پوست است که با تزریق مواد مغذی و روشن‌کننده، باعث کاهش تیرگی، لک‌ها و کدری پوست می‌شود."
+            "مزووایت یک روش روشن‌سازی و یکدست‌سازی پوست است که با تزریق مواد مغذی، روشن‌کننده و آبرسان، باعث کاهش تیرگی، لک‌ها و کدری پوست می‌شود."
         )
 
     elif call.data == "pros_cons":
         bot.send_message(
             chat_id,
-            "🌹 **مزایا و معایب مزووایت**\n\n"
+            "⚖️ **مزایا و معایب مزووایت**\n\n"
             "✅ *مزایا:*\n"
             "• روشن‌سازی پوست\n"
             "• کاهش لک و تیرگی\n"
@@ -97,8 +96,8 @@ def callback_handler(call):
             "• یکدست شدن رنگ پوست\n\n"
             "❌ *معایب:*\n"
             "• نیاز به چند جلسه برای نتیجه کامل\n"
-            "• احتمال قرمزی موقت\n"
-            "• مناسب نبودن برای برخی پوست‌های حساس"
+            "• احتمال قرمزی یا حساسیت موقت\n"
+            "• مناسب نبودن برای برخی پوست‌های خیلی حساس"
         )
 
 # ---------------- MESSAGE HANDLER ----------------
