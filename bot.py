@@ -1,35 +1,10 @@
 import telebot
 from telebot import types
-import requests
 
 TOKEN = "8557198522:AAEsN08N6TNy_NaBX9vZVVitnQUZYCs8MSs"
 ADMIN_ID = 8070693669
-AI_API_KEY = "YOUR_AI_KEY"
 
 bot = telebot.TeleBot(TOKEN)
-
-# ---------------- AI TEXT ANSWER ----------------
-
-def ai_answer(question):
-    url = "https://api.openai.com/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {AI_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": "gpt-3.5-turbo",
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": question}
-        ]
-    }
-
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        result = response.json()
-        return result["choices"][0]["message"]["content"]
-    except:
-        return "پاسخی دریافت نشد."
 
 # ---------------- START ----------------
 
@@ -44,97 +19,97 @@ def start(message):
     except:
         pass
 
-    bot.send_message(message.chat.id, "به ربات رخساره خانوم خوش آمدید.")
+    bot.send_message(message.chat.id, "🌸 به ربات رخساره خانوم خوش آمدید 🌸")
 
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("پرسیدن سؤال", callback_data="ask_ai"))
-    markup.add(types.InlineKeyboardButton("ثبت نوبت", callback_data="reserve"))
-    markup.add(types.InlineKeyboardButton("ارسال عکس صورت (اختیاری)", callback_data="send_photo"))
-    bot.send_message(message.chat.id, "انتخاب کنید:", reply_markup=markup)
+    markup.add(types.InlineKeyboardButton("💬 پرسیدن سؤال", callback_data="ask"))
+    markup.add(types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve"))
+    markup.add(types.InlineKeyboardButton("📸 ارسال عکس صورت", callback_data="photo"))
+    bot.send_message(message.chat.id, "لطفاً یکی از گزینه‌ها را انتخاب کنید:", reply_markup=markup)
 
-# ---------------- INLINE BUTTON HANDLER ----------------
+# ---------------- INLINE BUTTONS ----------------
 
 user_state = {}
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
 
-    if call.data == "ask_ai":
-        user_state[call.message.chat.id] = {"step": "ai"}
-        bot.send_message(call.message.chat.id, "سؤال خود را وارد کنید:")
+    chat_id = call.message.chat.id
+
+    if call.data == "ask":
+        user_state[chat_id] = {"step": "ask"}
+        bot.send_message(chat_id, "❓ سؤال خود را وارد کنید:")
 
     elif call.data == "reserve":
-        user_state[call.message.chat.id] = {"step": "name"}
-        bot.send_message(call.message.chat.id, "نام و نام خانوادگی:")
+        user_state[chat_id] = {"step": "name"}
+        bot.send_message(chat_id, "👤 نام و نام خانوادگی:")
 
-    elif call.data == "send_photo":
-        user_state[call.message.chat.id] = {"step": "photo"}
-        bot.send_message(call.message.chat.id, "عکس صورت خود را ارسال کنید:")
+    elif call.data == "photo":
+        user_state[chat_id] = {"step": "photo"}
+        bot.send_message(chat_id, "📸 لطفاً عکس صورت خود را ارسال کنید:")
 
 # ---------------- MESSAGE HANDLER ----------------
 
 @bot.message_handler(func=lambda m: m.chat.id in user_state)
 def state_handler(message):
 
-    state = user_state[message.chat.id]
+    chat_id = message.chat.id
+    state = user_state[chat_id]
 
-    # ---- AI ----
-    if state["step"] == "ai":
-        answer = ai_answer(message.text)
-        bot.send_message(message.chat.id, answer)
-        del user_state[message.chat.id]
+    # ---- SIMPLE QUESTION ANSWER ----
+    if state["step"] == "ask":
+        bot.send_message(chat_id, f"💬 پاسخ شما:\n{message.text}")
+        del user_state[chat_id]
         return
 
-    # ---- PHOTO ----
+    # ---- PHOTO MODE ----
     if state["step"] == "photo":
-        bot.send_message(message.chat.id, "لطفاً عکس را به صورت *Photo* ارسال کنید.")
+        bot.send_message(chat_id, "⚠️ لطفاً عکس را به صورت Photo ارسال کنید.")
         return
 
     # ---- RESERVATION ----
     if state["step"] == "name":
         state["name"] = message.text
         state["step"] = "phone"
-        bot.send_message(message.chat.id, "شماره تماس:")
+        bot.send_message(chat_id, "📞 شماره تماس:")
 
     elif state["step"] == "phone":
         state["phone"] = message.text
         state["step"] = "date"
-        bot.send_message(message.chat.id, "تاریخ نوبت:")
+        bot.send_message(chat_id, "📅 تاریخ نوبت:")
 
     elif state["step"] == "date":
         state["date"] = message.text
 
         bot.send_message(
-            message.chat.id,
-            f"نوبت ثبت شد.\n"
-            f"نام: {state['name']}\n"
-            f"شماره: {state['phone']}\n"
-            f"تاریخ: {state['date']}"
+            chat_id,
+            f"✅ نوبت شما ثبت شد.\n\n"
+            f"👤 نام: {state['name']}\n"
+            f"📞 شماره: {state['phone']}\n"
+            f"📅 تاریخ: {state['date']}"
         )
 
         bot.send_message(
             ADMIN_ID,
-            f"نوبت جدید:\n"
-            f"نام: {state['name']}\n"
-            f"شماره: {state['phone']}\n"
-            f"تاریخ: {state['date']}\n"
-            f"آیدی: @{message.from_user.username}"
+            f"📥 نوبت جدید:\n"
+            f"👤 نام: {state['name']}\n"
+            f"📞 شماره: {state['phone']}\n"
+            f"📅 تاریخ: {state['date']}\n"
+            f"🔗 آیدی: @{message.from_user.username}"
         )
 
-        del user_state[message.chat.id]
+        del user_state[chat_id]
 
 # ---------------- PHOTO RECEIVER ----------------
 
 @bot.message_handler(content_types=['photo'])
 def receive_photo(message):
 
-    # اگر کاربر در حالت ارسال عکس باشد
-    if message.chat.id in user_state and user_state[message.chat.id]["step"] == "photo":
-        bot.send_message(message.chat.id, "عکس دریافت شد.")
-        bot.forward_message(ADMIN_ID, message.chat.id, message.message_id)
-        del user_state[message.chat.id]
-    else:
-        # اگر عکس خارج از حالت ارسال شد، فقط نادیده گرفته می‌شود
-        pass
+    chat_id = message.chat.id
+
+    if chat_id in user_state and user_state[chat_id]["step"] == "photo":
+        bot.send_message(chat_id, "📸 عکس دریافت شد.")
+        bot.forward_message(ADMIN_ID, chat_id, message.message_id)
+        del user_state[chat_id]
 
 bot.infinity_polling()
