@@ -52,7 +52,7 @@ def start(message):
     except:
         pass
 
-    bot.send_message(message.chat.id, "🌸 به ربات خدمات مزووایت خوش آمدید 🌸")
+    bot.send_message(message.chat.id, "🌸 به ربات خدمات مزووایت رخساره خانوم🥰 خوش آمدید 🌸")
 
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai"))
@@ -94,7 +94,7 @@ def callback_handler(call):
     elif call.data == "pros_cons":
         bot.send_message(
             chat_id,
-            "⚖️ **مزایا و معایب مزووایت**\n\n"
+            "🌹 **مزایا و معایب مزووایت**\n\n"
             "✅ *مزایا:*\n"
             "• روشن‌سازی پوست\n"
             "• کاهش لک و تیرگی\n"
