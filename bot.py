@@ -1,193 +1,157 @@
-
 import telebot
 from telebot import types
+import requests
 
 TOKEN = "8557198522:AAEsN08N6TNy_NaBX9vZVVitnQUZYCs8MSs"
+ADMIN_ID = 8070693669
+AI_API_KEY = "YOUR_COPILOT_AI_KEY"
+
 bot = telebot.TeleBot(TOKEN)
 
-ADMIN_ID = 8070693669   
+# ---------------- AI ANALYSIS ----------------
 
-    
-# شروع ربات 
+def analyze_face(image_bytes):
+    url = "https://api.copilot.microsoft.com/vision/analyze"
+    headers = {
+        "Authorization": f"Bearer {AI_API_KEY}",
+        "Content-Type": "application/octet-stream"
+    }
+
+    response = requests.post(url, headers=headers, data=image_bytes)
+    result = response.json()
+
+    skin_type = result.get("skin_type", "نامشخص")
+    issues = result.get("issues", [])
+    suggestion = result.get("suggestion", "پیشنهاد درمان یافت نشد")
+
+    return skin_type, issues, suggestion
+
+# ---------------- START ----------------
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    welcome_text = "به ربات خدمات مزووایت رخساره خانوم خوشگل🥰 خوش اومدی"
 
+    # ارسال لوگو
     try:
-        photos = bot.get_user_profile_photos(bot.get_me().id)
-        if photos.total_count > 0:
-            file_id = photos.photos[0][0].file_id
-            bot.send_photo(message.chat.id, file_id, caption=welcome_text)
-        else:
-            bot.send_message(message.chat.id, welcome_text)
+        logo = open("logo.jpg", "rb")
+        bot.send_photo(message.chat.id, logo)
     except:
-        bot.send_message(message.chat.id, welcome_text)
+        bot.send_message(message.chat.id, "⚠️ لوگو پیدا نشد، فایل logo.jpg را کنار ربات قرار بده.")
 
-    main_menu(message.chat.id)
+    # پیام خوش‌آمدگویی
+    bot.send_message(
+        message.chat.id,
+        "به ربات خدمات مزووایت رخساره خانوم 🥰 خوش اومدی\n"
+        "برای شروع، یکی از گزینه‌های زیر رو انتخاب کن."
+    )
 
-# منوی اصلی 
-
-def main_menu(chat_id):
+    # دکمه‌های شیشه‌ای
     markup = types.InlineKeyboardMarkup()
-
-    btn1 = types.InlineKeyboardButton("🔵 ثبت مشخصات", callback_data="reg")
-    btn2 = types.InlineKeyboardButton("🟢 ارسال عکس صورت (اختیاری)", callback_data="photo")
-    btn3 = types.InlineKeyboardButton("🟣 خدمات مزووایت", callback_data="services")
-    btn4 = types.InlineKeyboardButton("🟠 درباره مزووایت", callback_data="about")
-
+    btn1 = types.InlineKeyboardButton("🔍 تحلیل پوست با هوش مصنوعی", callback_data="ai")
+    btn2 = types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve")
+    btn3 = types.InlineKeyboardButton("✨ مزووایت چیست؟", callback_data="info")
+    btn4 = types.InlineKeyboardButton("📞 ارتباط با رخساره خانوم", url="https://t.me/Rokhsareh_Hanum")
     markup.add(btn1)
     markup.add(btn2)
     markup.add(btn3)
     markup.add(btn4)
 
-    bot.send_message(chat_id, "لطفاً یکی از گزینه‌ها را انتخاب کن:", reply_markup=markup)
+    bot.send_message(message.chat.id, "منوی اصلی:", reply_markup=markup)
 
-# هندلر دکمه‌ها
+# ---------------- INLINE BUTTON HANDLER ----------------
+
+user_state = {}
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
-    data = call.data
 
-    if data == "reg":
-        ask_name(call.message)
+    if call.data == "ai":
+        bot.send_message(
+            call.message.chat.id,
+            "لطفاً یک عکس واضح از صورتت ارسال کن تا هوش مصنوعی تحلیل کنه 🌼"
+        )
 
-    elif data == "photo":
-        bot.send_message(call.message.chat.id,
-                         "اگر دوست داری، عکس صورتت رو ارسال کن 🌸\n(این بخش کاملاً اختیاری هست)")
+    elif call.data == "info":
+        bot.send_message(
+            call.message.chat.id,
+            "مزووایت یک روش روشن‌سازی و یکدست‌سازی پوست هست که با مواد مخصوص انجام میشه ✨"
+        )
 
-    elif data == "services":
-        services_menu(call.message)
+    elif call.data == "reserve":
+        user_state[call.message.chat.id] = {"step": "name"}
+        bot.send_message(call.message.chat.id, "لطفاً نام و نام خانوادگی خود را وارد کنید:")
 
-    elif data == "about":
-        show_about(call.message)
+# ---------------- RESERVATION SYSTEM ----------------
 
-    elif data == "benefits":
-        show_benefits(call.message)
+@bot.message_handler(func=lambda m: m.chat.id in user_state)
+def reservation_handler(message):
 
-    elif data == "side_effects":
-        show_side_effects(call.message)
+    state = user_state[message.chat.id]
 
-    elif data == "care":
-        show_care(call.message)
+    if state["step"] == "name":
+        state["name"] = message.text
+        state["step"] = "phone"
+        bot.send_message(message.chat.id, "شماره تماس خود را وارد کنید:")
 
-    elif data == "back":
-        main_menu(call.message.chat.id)
+    elif state["step"] == "phone":
+        state["phone"] = message.text
+        state["step"] = "date"
+        bot.send_message(message.chat.id, "تاریخ مورد نظر برای نوبت را وارد کنید (مثال: 1403/08/12):")
 
-# منوی خدمات مزووایت
+    elif state["step"] == "date":
+        state["date"] = message.text
+        state["step"] = "done"
 
-def services_menu(message):
-    markup = types.InlineKeyboardMarkup()
+        # پیام تایید برای کاربر
+        bot.send_message(
+            message.chat.id,
+            f"نوبت شما با موفقیت ثبت شد 🌸\n\n"
+            f"👤 نام: {state['name']}\n"
+            f"📞 شماره: {state['phone']}\n"
+            f"🗓 تاریخ: {state['date']}\n\n"
+            f"رخساره خانوم به زودی با شما تماس می‌گیرند 💖"
+        )
 
-    btn1 = types.InlineKeyboardButton("✨ مزایا مزووایت", callback_data="benefits")
-    btn2 = types.InlineKeyboardButton("⚠️ معایب / عوارض احتمالی", callback_data="side_effects")
-    btn3 = types.InlineKeyboardButton("💆‍♀️ مراقبت‌های لازم بعد از مزووایت", callback_data="care")
-    btn4 = types.InlineKeyboardButton("⬅️ بازگشت", callback_data="back")
+        # ارسال به مدیر
+        bot.send_message(
+            ADMIN_ID,
+            f"📥 نوبت جدید ثبت شد:\n"
+            f"👤 نام: {state['name']}\n"
+            f"📞 شماره: {state['phone']}\n"
+            f"🗓 تاریخ: {state['date']}\n"
+            f"آیدی: @{message.from_user.username}"
+        )
 
-    markup.add(btn1)
-    markup.add(btn2)
-    markup.add(btn3)
-    markup.add(btn4)
+        del user_state[message.chat.id]
 
-    bot.send_message(message.chat.id, "بخش مورد نظرت رو انتخاب کن:", reply_markup=markup)
+# ---------------- PHOTO HANDLER ----------------
 
-#  مزایا
+@bot.message_handler(content_types=['photo'])
+def handle_photo(message):
+    file_id = message.photo[-1].file_id
+    file_info = bot.get_file(file_id)
+    downloaded = bot.download_file(file_info.file_path)
 
-def show_benefits(message):
-    text = (
-        "✨ مزایا مزووایت:\n"
-        "- روشن‌سازی و شفافیت پوست\n"
-        "- کاهش لک، تیرگی و کدری\n"
-        "- آبرسانی عمیق و رفع خشکی\n"
-        "- یکدست شدن رنگ پوست\n"
-        "- تحریک کلاژن‌سازی\n"
-        "- افزایش درخشندگی و لطافت پوست\n"
+    bot.send_message(message.chat.id, "در حال تحلیل عکس با هوش مصنوعی... 🌼")
+
+    skin_type, issues, suggestion = analyze_face(downloaded)
+
+    bot.send_message(
+        message.chat.id,
+        f"🔍 نتیجه تحلیل پوست:\n"
+        f"• نوع پوست: {skin_type}\n"
+        f"• مشکلات: {', '.join(issues)}\n\n"
+        f"✨ پیشنهاد درمان:\n{suggestion}"
     )
-    back_button(message.chat.id, text)
-
-# معایب
-
-def show_side_effects(message):
-    text = (
-        "⚠️ معایب و عوارض احتمالی مزووایت:\n"
-        "- قرمزی و التهاب خفیف تا چند ساعت\n"
-        "- خشکی یا پوسته‌پوسته شدن موقت\n"
-        "- احتمال حساسیت در پوست‌های خیلی حساس\n"
-        "- نیاز به چند جلسه برای نتیجه کامل\n"
-        "- ممنوعیت برای افراد باردار یا دارای بیماری پوستی فعال\n"
-    )
-    back_button(message.chat.id, text)
-
-#  مراقبت‌های لازم
-
-def show_care(message):
-    text = (
-        "💆‍♀️ مراقبت‌های لازم بعد از مزووایت:\n"
-        "- تا ۲۴ ساعت شست‌وشوی صورت نداشته باش\n"
-        "- از آفتاب مستقیم دوری کن و ضدآفتاب بزن\n"
-        "- از کرم‌های سنگین یا لایه‌بردار استفاده نکن\n"
-        "- تا ۲۴ ساعت آرایش نکن\n"
-        "- آب زیاد بنوش تا آبرسانی پوست بهتر انجام بشه\n"
-        "- اگر قرمزی داشتی، کمپرس سرد کمک می‌کنه\n"
-    )
-    back_button(message.chat.id, text)
-
-#  درباره مزووایت
-
-def show_about(message):
-    text = (
-        "مزووایت یک روش درمانی برای روشن‌سازی و شفافیت پوست هست.\n"
-        "با تزریق مواد مغذی و روشن‌کننده، پوست یکدست‌تر و شفاف‌تر میشه."
-    )
-    back_button(message.chat.id, text)
-
-# ثبت مشخصات
-
-def ask_name(message):
-    msg = bot.send_message(message.chat.id, "نام و نام خانوادگیت رو وارد کن:")
-    bot.register_next_step_handler(msg, get_name)
-
-def get_name(message):
-    name = message.text.strip()
-    msg = bot.send_message(message.chat.id, "شماره تماست رو وارد کن:")
-    bot.register_next_step_handler(msg, lambda m: get_time(m, name))
-
-def get_time(message, name):
-    phone = message.text.strip()
-    msg = bot.send_message(message.chat.id, "چه ساعتی دوست داری درخواستت ثبت بشه؟ (مثلاً: ساعت ۷ عصر)")
-    bot.register_next_step_handler(msg, lambda m: save_info(m, name, phone))
-
-def save_info(message, name, phone):
-    time = message.text.strip()
-
-    bot.send_message(message.chat.id, "اطلاعاتت ثبت شد🌹")
 
     bot.send_message(
         ADMIN_ID,
-        f"ثبت درخواست جدید:\n"
-        f"نام: {name}\n"
-        f"شماره: {phone}\n"
-        f"ساعت دلخواه: {time}"
+        f"📥 مراجعه‌کننده جدید:\n"
+        f"نام: {message.from_user.first_name}\n"
+        f"آیدی: @{message.from_user.username}\n"
+        f"نوع پوست: {skin_type}\n"
+        f"مشکلات: {', '.join(issues)}\n"
+        f"پیشنهاد درمان: {suggestion}"
     )
-
-    main_menu(message.chat.id)
-
-#  ارسال عکس صورت (اختیاری)
-
-@bot.message_handler(content_types=['photo'])
-def forward_photo(message):
-    bot.send_message(message.chat.id, "عکس دریافت شد و برای مدیر ارسال شد 🌹")
-    bot.forward_message(ADMIN_ID, message.chat.id, message.message_id)
-    main_menu(message.chat.id)
-
-#  دکمه بازگشت
-
-def back_button(chat_id, text):
-    markup = types.InlineKeyboardMarkup()
-    back = types.InlineKeyboardButton("⬅️ بازگشت به منوی اصلی", callback_data="back")
-    markup.add(back)
-    bot.send_message(chat_id, text, reply_markup=markup)
-
-# اجرا
 
 bot.infinity_polling()
