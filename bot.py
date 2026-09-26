@@ -1,10 +1,38 @@
 import telebot
 from telebot import types
+import requests
+
+# ---------------- CONFIG ----------------
 
 TOKEN = "8557198522:AAEsN08N6TNy_NaBX9vZVVitnQUZYCs8MSs"
 ADMIN_ID = 8070693669
 
+# ❗ API KEY را اینجا قرار بده
+AI_API_KEY = "sk-24f38cc1f46143f88297c4c530b870bc"
+
 bot = telebot.TeleBot(TOKEN)
+
+# ---------------- AI ANSWER ----------------
+
+def ai_answer(question):
+    url = "https://api.openai.com/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {AI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": question}
+        ]
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        return response.json()["choices"][0]["message"]["content"]
+    except:
+        return "❗ مشکلی پیش آمد، لطفاً دوباره تلاش کنید."
 
 # ---------------- START ----------------
 
@@ -19,10 +47,10 @@ def start(message):
     except:
         pass
 
-    bot.send_message(message.chat.id, "🌸 به ربات رخساره خانوم خوشگل🥰 خوش آمدید 🌸")
+    bot.send_message(message.chat.id, "🌸 به ربات رخساره خانوم خوشگل 🥰خوش آمدید 🌸")
 
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("💬 پرسیدن سؤال", callback_data="ask"))
+    markup.add(types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai"))
     markup.add(types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve"))
     markup.add(types.InlineKeyboardButton("📸 ارسال عکس صورت", callback_data="photo"))
     bot.send_message(message.chat.id, "لطفاً یکی از گزینه‌ها را انتخاب کنید:", reply_markup=markup)
@@ -36,8 +64,8 @@ def callback_handler(call):
 
     chat_id = call.message.chat.id
 
-    if call.data == "ask":
-        user_state[chat_id] = {"step": "ask"}
+    if call.data == "ask_ai":
+        user_state[chat_id] = {"step": "ai"}
         bot.send_message(chat_id, "❓ سؤال خود را وارد کنید:")
 
     elif call.data == "reserve":
@@ -56,13 +84,15 @@ def state_handler(message):
     chat_id = message.chat.id
     state = user_state[chat_id]
 
-    # ---- SIMPLE QUESTION ANSWER ----
-    if state["step"] == "ask":
-        bot.send_message(chat_id, f"💬 پاسخ شما:\n{message.text}")
+    # ---- AI ----
+    if state["step"] == "ai":
+        bot.send_message(chat_id, "⏳ در حال دریافت پاسخ…")
+        answer = ai_answer(message.text)
+        bot.send_message(chat_id, f"🤖 پاسخ:\n{answer}")
         del user_state[chat_id]
         return
 
-    # ---- PHOTO MODE ----
+    # ---- PHOTO ----
     if state["step"] == "photo":
         bot.send_message(chat_id, "⚠️ لطفاً عکس را به صورت Photo ارسال کنید.")
         return
