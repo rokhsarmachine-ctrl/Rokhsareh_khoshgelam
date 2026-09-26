@@ -29,16 +29,22 @@ def ai_answer(question):
 
     try:
         response = requests.post(url, headers=headers, json=data)
-        return response.json()["choices"][0]["message"]["content"]
-    except:
-        return "❗ مشکلی پیش آمد، لطفاً دوباره تلاش کنید."
+        result = response.json()
+
+        # اگر DeepSeek خطا برگرداند
+        if "error" in result:
+            return f"❗ خطا از سمت DeepSeek:\n{result['error']['message']}"
+
+        return result["choices"][0]["message"]["content"]
+
+    except Exception as e:
+        return f"❗ مشکلی پیش آمد:\n{str(e)}"
 
 # ---------------- START ----------------
 
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    # نمایش عکس پروفایل ربات
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
         if photos.total_count > 0:
@@ -46,7 +52,7 @@ def start(message):
     except:
         pass
 
-    bot.send_message(message.chat.id, "🌸 به ربات خدمات مزووایت رخساره خانوم 🥰 خوش آمدید 🌸")
+    bot.send_message(message.chat.id, "🌸 به ربات خدمات مزووایت خوش آمدید 🌸")
 
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai"))
@@ -108,7 +114,6 @@ def state_handler(message):
     chat_id = message.chat.id
     state = user_state[chat_id]
 
-    # ---- AI ----
     if state["step"] == "ai":
         bot.send_message(chat_id, "⏳ در حال دریافت پاسخ…")
         answer = ai_answer(message.text)
@@ -116,12 +121,10 @@ def state_handler(message):
         del user_state[chat_id]
         return
 
-    # ---- PHOTO ----
     if state["step"] == "photo":
         bot.send_message(chat_id, "⚠️ لطفاً عکس را به صورت Photo ارسال کنید.")
         return
 
-    # ---- RESERVATION ----
     if state["step"] == "name":
         state["name"] = message.text
         state["step"] = "phone"
