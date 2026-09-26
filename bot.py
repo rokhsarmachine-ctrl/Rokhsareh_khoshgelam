@@ -8,7 +8,7 @@ TOKEN = "8557198522:AAEsN08N6TNy_NaBX9vZVVitnQUZYCs8MSs"
 ADMIN_ID = 8070693669
 
 # ❗ API KEY دیپ‌سیک را اینجا قرار بده
-AI_API_KEY = "YOUR_DEEPSEEK_API_KEY"
+AI_API_KEY = "sk-24f38cc1f46143f88297c4c530b870bc"
 
 bot = telebot.TeleBot(TOKEN)
 
