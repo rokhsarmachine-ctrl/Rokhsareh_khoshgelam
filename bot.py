@@ -9,7 +9,7 @@ import os
 BOT_TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
 ADMIN_ID = 8070693669
 
-# API Key از Environment Variable خوانده می‌شود (بدون Secret detected)
+# API Key از Environment Variable خوانده می‌شود
 GEMINI_KEY = os.getenv("GEMINI_KEY")
 
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -24,8 +24,8 @@ def ask_gemini(prompt):
     try:
         response = model.generate_content(prompt)
         return response.text
-    except:
-        return " ⚠️ در پردازش پیام شما خطایی رخ داد."
+    except Exception as e:
+        return f"⚠️ خطا در Gemini:\n{e}"
 
 # -----------------------------
 # 🚀 شروع ربات + عکس پروفایل واقعی ربات
@@ -33,7 +33,7 @@ def ask_gemini(prompt):
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    welcome_text = "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانوم🥰 خوش اومدی ✨"
+    welcome_text = "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانوم خوشگل🥰خوش اومدی ✨"
 
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
