@@ -13,7 +13,7 @@ ADMIN_ID = 8070693669
 GEMINI_KEY = os.getenv("GEMINI_KEY")
 
 if not GEMINI_KEY:
-    raise ValueError("❌ GEMINI_KEY در Railway تعریف نشده است!")
+    raise ValueError("❌ خطا: متغیر GEMINI_KEY در Railway تعریف نشده است!")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -31,13 +31,29 @@ def ask_gemini(prompt):
         return f"⚠️ خطا در Gemini:\n{e}"
 
 # -----------------------------
-# 🚀 شروع ربات
+# 🚀 شروع ربات + عکس پروفایل ربات
 # -----------------------------
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id,
-        "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانوم خوشگل🥰 خوش اومدی ✨"
+
+    welcome_text = (
+        "سلام عزیزم 🌸\n"
+        "به ربات خدمات مزووایت رخساره خانوم خوشگل🥰 خوش اومدی ✨"
     )
+
+    try:
+        bot_info = bot.get_me()
+        photos = bot.get_user_profile_photos(bot_info.id)
+
+        if photos.total_count > 0:
+            file_id = photos.photos[0][0].file_id
+            bot.send_photo(message.chat.id, file_id, caption=welcome_text)
+        else:
+            bot.send_message(message.chat.id, welcome_text)
+
+    except:
+        bot.send_message(message.chat.id, welcome_text)
+
     main_menu(message.chat.id)
 
 # -----------------------------
