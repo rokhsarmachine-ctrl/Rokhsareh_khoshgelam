@@ -35,7 +35,7 @@ def ask_gemini(prompt):
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    welcome_text = "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانو خوشگل 🥰 خوش اومدی ✨"
+    welcome_text = "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانوم خوشگل 🥰 خوش اومدی ✨"
 
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
