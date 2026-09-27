@@ -9,8 +9,11 @@ import os
 BOT_TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
 ADMIN_ID = 8070693669
 
-# API Key از Environment Variable خوانده می‌شود
+# ❗ کلید Gemini از Variable خوانده می‌شود
 GEMINI_KEY = os.getenv("GEMINI_KEY")
+
+if not GEMINI_KEY:
+    raise ValueError("❌ GEMINI_KEY در Railway تعریف نشده است!")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -28,23 +31,13 @@ def ask_gemini(prompt):
         return f"⚠️ خطا در Gemini:\n{e}"
 
 # -----------------------------
-# 🚀 شروع ربات + عکس پروفایل واقعی ربات
+# 🚀 شروع ربات
 # -----------------------------
 @bot.message_handler(commands=['start'])
 def start(message):
-
-    welcome_text = "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانوم خوشگل🥰 خوش اومدی ✨"
-
-    try:
-        photos = bot.get_user_profile_photos(bot.get_me().id)
-        if photos.total_count > 0:
-            file_id = photos.photos[0][0].file_id
-            bot.send_photo(message.chat.id, file_id, caption=welcome_text)
-        else:
-            bot.send_message(message.chat.id, welcome_text)
-    except:
-        bot.send_message(message.chat.id, welcome_text)
-
+    bot.send_message(message.chat.id,
+        "سلام عزیزم 🌸\nبه ربات خدمات مزووایت خوش اومدی ✨"
+    )
     main_menu(message.chat.id)
 
 # -----------------------------
@@ -55,7 +48,8 @@ def main_menu(chat_id):
 
     markup.add(types.InlineKeyboardButton("🌸 ❓ پرسیدن سوال - هوش مصنوعی", callback_data="ask"))
     markup.add(types.InlineKeyboardButton("🌸 🗓 ثبت نوبت", callback_data="reserve"))
-    markup.add(types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
+    markup.add(types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data="photo"))
+    markup.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
     markup.add(types.InlineKeyboardButton("🌸 💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care"))
 
     bot.send_message(chat_id, "لطفاً یکی از گزینه‌های زیر رو انتخاب کن:", reply_markup=markup)
@@ -146,7 +140,7 @@ def get_date(message, user_data):
     )
 
 # -----------------------------
-# 📸 دریافت عکس صورت (اختیاری)
+# 📸 دریافت عکس صورت
 # -----------------------------
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
@@ -165,7 +159,7 @@ def handle_photo(message):
         bot.reply_to(message, f"⚠️ خطا در دریافت عکس:\n{e}")
 
 # -----------------------------
-# 🤖 پاسخ‌دهی هوشمند با Gemini (فقط متن)
+# 🤖 پاسخ‌دهی هوشمند با Gemini
 # -----------------------------
 @bot.message_handler(content_types=['text'])
 def ai_answer(message):
