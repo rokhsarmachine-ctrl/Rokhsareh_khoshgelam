@@ -1,13 +1,16 @@
 import telebot
 from telebot import types
 import google.generativeai as genai
+import os
 
 # -----------------------------
 # ⚙️ تنظیمات ربات
 # -----------------------------
 BOT_TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
 ADMIN_ID = 8070693669
-GEMINI_KEY = "YOUR_GEMINI_API_KEY"
+
+# API Key از Environment Variable خوانده می‌شود (بدون Secret detected)
+GEMINI_KEY = os.getenv("GEMINI_KEY")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -50,17 +53,11 @@ def start(message):
 def main_menu(chat_id):
     markup = types.InlineKeyboardMarkup()
 
-    btn1 = types.InlineKeyboardButton("🌸 ❓ پرسیدن سؤال", callback_data="ask")
-    btn2 = types.InlineKeyboardButton("🌸 🗓 ثبت نوبت", callback_data="reserve")
-    btn3 = types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data="photo")
-    btn4 = types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite")
-    btn5 = types.InlineKeyboardButton("🌸 💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care")
-
-    markup.add(btn1)
-    markup.add(btn2)
-    markup.add(btn3)
-    markup.add(btn4)
-    markup.add(btn5)
+    markup.add(types.InlineKeyboardButton("🌸 ❓ پرسیدن سؤال", callback_data="ask"))
+    markup.add(types.InlineKeyboardButton("🌸 🗓 ثبت نوبت", callback_data="reserve"))
+    markup.add(types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data="photo"))
+    markup.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
+    markup.add(types.InlineKeyboardButton("🌸 💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care"))
 
     bot.send_message(chat_id, "لطفاً یکی از گزینه‌های زیر رو انتخاب کن:", reply_markup=markup)
 
