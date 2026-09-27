@@ -18,8 +18,6 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # 🤖 تنظیمات Gemini
 # -----------------------------
 genai.configure(api_key=GEMINI_KEY)
-
-# مدل جدید و فعال
 model = genai.GenerativeModel("gemini-3.5-flash")
 
 def ask_gemini(prompt):
@@ -50,15 +48,14 @@ def start(message):
     main_menu(message.chat.id)
 
 # -----------------------------
-# 🌸 منوی اصلی (عمودی + گل)
+# 🌸 منوی اصلی
 # -----------------------------
 def main_menu(chat_id):
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(types.InlineKeyboardButton("🌸 ❓  پرسیدن سوال-هوش مصنوعی", callback_data="ask"))
+    markup.add(types.InlineKeyboardButton("🌸 ❓ پرسیدن سوال - هوش مصنوعی", callback_data="ask"))
     markup.add(types.InlineKeyboardButton("🌸 🗓 ثبت نوبت", callback_data="reserve"))
-    markup.add(types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data="photo"))
-    markup.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
+    markup.add(types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
     markup.add(types.InlineKeyboardButton("🌸 💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care"))
 
     bot.send_message(chat_id, "لطفاً یکی از گزینه‌های زیر رو انتخاب کن:", reply_markup=markup)
@@ -124,8 +121,7 @@ def send_care_info(chat_id):
 # 📝 ثبت نوبت
 # -----------------------------
 def get_name(message):
-    user_data = {}
-    user_data["name"] = message.text
+    user_data = {"name": message.text}
 
     bot.send_message(message.chat.id, "📞 شماره تماس را وارد کنید:")
     bot.register_next_step_handler(message, lambda msg: get_phone(msg, user_data))
@@ -150,26 +146,31 @@ def get_date(message, user_data):
     )
 
 # -----------------------------
-# 📸 دریافت عکس صورت
+# 📸 دریافت عکس صورت (اختیاری)
 # -----------------------------
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
-    file_id = message.photo[-1].file_id
+    try:
+        file_id = message.photo[-1].file_id
 
-    bot.send_photo(
-        ADMIN_ID,
-        file_id,
-        caption=f"📸 عکس صورت مشتری\n🆔 User ID: {message.chat.id}"
-    )
+        bot.send_photo(
+            ADMIN_ID,
+            file_id,
+            caption=f"📸 عکس صورت مشتری\n🆔 User ID: {message.chat.id}"
+        )
 
-    bot.reply_to(message, "🌸 عکس صورت شما با موفقیت دریافت شد 💖")
+        bot.reply_to(message, "🌸 عکس صورت شما با موفقیت دریافت شد 💖")
+
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ خطا در دریافت عکس:\n{e}")
 
 # -----------------------------
-# 🤖 پاسخ‌دهی هوشمند با Gemini
+# 🤖 پاسخ‌دهی هوشمند با Gemini (فقط متن)
 # -----------------------------
-@bot.message_handler(func=lambda m: True)
+@bot.message_handler(content_types=['text'])
 def ai_answer(message):
-    bot.reply_to(message, ask_gemini(message.text))
+    reply = ask_gemini(message.text)
+    bot.reply_to(message, reply)
 
 # -----------------------------
 # ▶️ اجرا
