@@ -36,7 +36,7 @@ def ask_gemini(prompt):
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id,
-        "سلام عزیزم 🌸\nبه ربات خدمات مزووایت خوش اومدی ✨"
+        "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانوم خوشگل🥰 خوش اومدی ✨"
     )
     main_menu(message.chat.id)
 
