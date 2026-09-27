@@ -5,7 +5,7 @@ import google.generativeai as genai
 # -----------------------------
 # ⚙️ تنظیمات ربات
 # -----------------------------
-BOT_TOKEN = "8557198522:AAGtu84u20Qo3w8eb-ANxXBI1J5bG2kCNeA"
+BOT_TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
 ADMIN_ID = 8070693669   # آیدی عددی مدیر
 GEMINI_KEY = "YOUR_GEMINI_API_KEY"
 
