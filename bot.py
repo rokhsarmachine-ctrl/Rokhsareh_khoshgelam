@@ -25,7 +25,7 @@ def ask_gemini(prompt):
         response = model.generate_content(prompt)
         return response.text
     except:
-        return "⚠️ در پردازش پیام شما خطایی رخ داد."
+        return " ⚠️ در پردازش پیام شما خطایی رخ داد."
 
 # -----------------------------
 # 🚀 شروع ربات + عکس پروفایل واقعی ربات
