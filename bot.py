@@ -19,8 +19,8 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # -----------------------------
 genai.configure(api_key=GEMINI_KEY)
 
-# مدل بدون خطا و سازگار با همه نسخه‌ها
-model = genai.GenerativeModel("gemini-pro")
+# مدل جدید و فعال
+model = genai.GenerativeModel("gemini-3.5-flash")
 
 def ask_gemini(prompt):
     try:
@@ -35,7 +35,7 @@ def ask_gemini(prompt):
 @bot.message_handler(commands=['start'])
 def start(message):
 
-    welcome_text = "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخسا ه خانوم خوشگل🥰خوش اومدی ✨"
+    welcome_text = "سلام عزیزم 🌸\nبه ربات خدمات مزووایت رخساره خانو خوشگل 🥰 خوش اومدی ✨"
 
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
