@@ -55,7 +55,7 @@ def start(message):
 def main_menu(chat_id):
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(types.InlineKeyboardButton("🌸 ❓ پرسیدن سؤال", callback_data="ask"))
+    markup.add(types.InlineKeyboardButton("🌸 ❓  پرسیدن سوال-هوش مصنوعی", callback_data="ask"))
     markup.add(types.InlineKeyboardButton("🌸 🗓 ثبت نوبت", callback_data="reserve"))
     markup.add(types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data="photo"))
     markup.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
