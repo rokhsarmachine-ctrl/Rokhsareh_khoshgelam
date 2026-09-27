@@ -34,31 +34,33 @@ def start(message):
 
     try:
         photos = bot.get_user_profile_photos(bot.get_me().id)
-
         if photos.total_count > 0:
             file_id = photos.photos[0][0].file_id
             bot.send_photo(message.chat.id, file_id, caption=welcome_text)
         else:
             bot.send_message(message.chat.id, welcome_text)
-
     except:
         bot.send_message(message.chat.id, welcome_text)
 
     main_menu(message.chat.id)
 
 # -----------------------------
-# 🎛 منوی اصلی
+# 🌸 منوی اصلی (عمودی + گل)
 # -----------------------------
 def main_menu(chat_id):
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(
-        types.InlineKeyboardButton("❓ پرسیدن سؤال", callback_data="ask"),
-        types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve"),
-        types.InlineKeyboardButton("📸 ارسال عکس صورت", callback_data="photo"),
-        types.InlineKeyboardButton("✨ درباره مزووایت", callback_data="mezowhite"),
-        types.InlineKeyboardButton("💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care")
-    )
+    btn1 = types.InlineKeyboardButton("🌸 ❓ پرسیدن سؤال", callback_data="ask")
+    btn2 = types.InlineKeyboardButton("🌸 🗓 ثبت نوبت", callback_data="reserve")
+    btn3 = types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data="photo")
+    btn4 = types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite")
+    btn5 = types.InlineKeyboardButton("🌸 💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care")
+
+    markup.add(btn1)
+    markup.add(btn2)
+    markup.add(btn3)
+    markup.add(btn4)
+    markup.add(btn5)
 
     bot.send_message(chat_id, "لطفاً یکی از گزینه‌های زیر رو انتخاب کن:", reply_markup=markup)
 
