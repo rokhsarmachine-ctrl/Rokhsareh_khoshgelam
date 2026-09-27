@@ -1,172 +1,199 @@
 import telebot
 from telebot import types
-import requests
+import google.generativeai as genai
 
-# ---------------- CONFIG ----------------
+# -----------------------------
+# ⚙️ تنظیمات ربات
+# -----------------------------
+BOT_TOKEN = "8557198522:AAGtu84u20Qo3w8eb-ANxXBI1J5bG2kCNeA"
+ADMIN_ID = 8070693669   # آیدی عددی مدیر
+GEMINI_KEY = "YOUR_GEMINI_API_KEY"
 
-TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
-ADMIN_ID = 8070693669
+bot = telebot.TeleBot(BOT_TOKEN)
 
-# ❗ API KEY دیپ‌سیک را اینجا قرار بده
-AI_API_KEY = "sk-24f38cc1f46143f88297c4c530b870bc"
+# -----------------------------
+# 🤖 تنظیمات Gemini
+# -----------------------------
+genai.configure(api_key=GEMINI_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-bot = telebot.TeleBot(TOKEN)
-
-# ---------------- AI (DeepSeek) ----------------
-
-def ai_answer(question):
-    url = "https://api.deepseek.com/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {AI_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": "deepseek-chat",
-        "messages": [
-            {"role": "user", "content": question}
-        ]
-    }
-
+def ask_gemini(prompt):
     try:
-        response = requests.post(url, headers=headers, json=data)
-        result = response.json()
+        response = model.generate_content(prompt)
+        return response.text
+    except:
+        return "⚠️ در پردازش پیام شما خطایی رخ داد."
 
-        # اگر DeepSeek خطا برگرداند
-        if "error" in result:
-            return f"❗ خطا از سمت DeepSeek:\n{result['error']['message']}"
+# -----------------------------
+# 🗂 دیتای کاربران
+# -----------------------------
+user_data = {}
 
-        return result["choices"][0]["message"]["content"]
-
-    except Exception as e:
-        return f"❗ مشکلی پیش آمد:\n{str(e)}"
-
-# ---------------- START ----------------
-
+# -----------------------------
+# 🚀 شروع ربات
+# -----------------------------
 @bot.message_handler(commands=['start'])
 def start(message):
-
-    try:
-        photos = bot.get_user_profile_photos(bot.get_me().id)
-        if photos.total_count > 0:
-            bot.send_photo(message.chat.id, photos.photos[0][0].file_id)
-    except:
-        pass
-
-    bot.send_message(message.chat.id, "🌸 به ربات خدمات مزووایت رخساره خانوم🥰 خوش آمدید 🌸")
-
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🤖 پرسیدن سؤال از هوش مصنوعی", callback_data="ask_ai"))
-    markup.add(types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve"))
-    markup.add(types.InlineKeyboardButton("📸 ارسال عکس صورت", callback_data="photo"))
-    markup.add(types.InlineKeyboardButton("✨ درباره مزووایت", callback_data="about"))
-    markup.add(types.InlineKeyboardButton("⚖️ مزایا و معایب مزووایت", callback_data="pros_cons"))
 
-    bot.send_message(message.chat.id, "لطفاً یکی از گزینه‌ها را انتخاب کنید:", reply_markup=markup)
+    btn1 = types.InlineKeyboardButton("❓ پرسیدن سؤال", callback_data="ask")
+    btn2 = types.InlineKeyboardButton("🗓 ثبت نوبت", callback_data="reserve")
+    btn3 = types.InlineKeyboardButton("📸 ارسال عکس صورت", callback_data="photo")
+    btn4 = types.InlineKeyboardButton("✨ درباره مزووایت", callback_data="mezowhite")
+    btn5 = types.InlineKeyboardButton("💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care")
 
-# ---------------- INLINE BUTTONS ----------------
+    markup.add(btn1)
+    markup.add(btn2)
+    markup.add(btn3)
+    markup.add(btn4)
+    markup.add(btn5)
 
-user_state = {}
+    bot.send_message(
+        message.chat.id,
+        "سلام عزیزم 🌸\n"
+        "به ربات خدمات مزووایت رخساره خانوم 🥰 خوش اومدی ✨\n"
+        "لطفاً یکی از گزینه‌های زیر رو انتخاب کن:",
+        reply_markup=markup
+    )
 
+# -----------------------------
+# 🎛 هندل دکمه‌ها
+# -----------------------------
 @bot.callback_query_handler(func=lambda call: True)
-def callback_handler(call):
-
-    chat_id = call.message.chat.id
-
-    if call.data == "ask_ai":
-        user_state[chat_id] = {"step": "ai"}
-        bot.send_message(chat_id, "❓ سؤال خود را وارد کنید:")
+def callback(call):
+    if call.data == "ask":
+        bot.send_message(call.message.chat.id, "❓ سؤال خود را بپرس عزیزم:")
 
     elif call.data == "reserve":
-        user_state[chat_id] = {"step": "name"}
-        bot.send_message(chat_id, "👤 نام و نام خانوادگی:")
+        bot.send_message(call.message.chat.id, "👤 لطفاً نام خود را وارد کنید:")
+        bot.register_next_step_handler(call.message, get_name)
 
     elif call.data == "photo":
-        user_state[chat_id] = {"step": "photo"}
-        bot.send_message(chat_id, "📸 لطفاً عکس صورت خود را ارسال کنید:")
+        bot.send_message(call.message.chat.id, "📸 لطفاً عکس صورت خود را ارسال کنید:")
 
-    elif call.data == "about":
-        bot.send_message(
-            chat_id,
-            "✨ **مزووایت چیست؟**\n\n"
-            "مزووایت یک روش روشن‌سازی و یکدست‌سازی پوست است که با تزریق مواد مغذی، روشن‌کننده و آبرسان، باعث کاهش تیرگی، لک‌ها و کدری پوست می‌شود."
-        )
+    elif call.data == "mezowhite":
+        send_mezowhite_info(call.message.chat.id)
 
-    elif call.data == "pros_cons":
-        bot.send_message(
-            chat_id,
-            "🌹 **مزایا و معایب مزووایت**\n\n"
-            "✅ *مزایا:*\n"
-            "• روشن‌سازی پوست\n"
-            "• کاهش لک و تیرگی\n"
-            "• آبرسانی و شفافیت\n"
-            "• یکدست شدن رنگ پوست\n\n"
-            "❌ *معایب:*\n"
-            "• نیاز به چند جلسه برای نتیجه کامل\n"
-            "• احتمال قرمزی یا حساسیت موقت\n"
-            "• مناسب نبودن برای برخی پوست‌های خیلی حساس"
-        )
+    elif call.data == "care":
+        send_care_info(call.message.chat.id)
 
-# ---------------- MESSAGE HANDLER ----------------
+# -----------------------------
+# ✨ بخش درباره مزووایت
+# -----------------------------
+def send_mezowhite_info(chat_id):
+    text = (
+        "✨ **مزووایت چیست؟**\n"
+        "مزووایت یک روش روشن‌سازی و یکدست‌سازی پوست است که با تزریق مواد مغذی، روشن‌کننده و آبرسان به لایه میانی پوست انجام می‌شود.\n\n"
 
-@bot.message_handler(func=lambda m: m.chat.id in user_state)
-def state_handler(message):
+        "🌟 **مزایای مزووایت:**\n"
+        "• روشن‌تر شدن پوست و کاهش تیرگی‌ها\n"
+        "• کاهش لک‌های سطحی و عمقی\n"
+        "• آبرسانی قوی و شفافیت پوست\n"
+        "• یکدست شدن رنگ پوست\n"
+        "• کاهش خستگی و کدری صورت\n"
+        "• مناسب برای انواع پوست\n\n"
 
-    chat_id = message.chat.id
-    state = user_state[chat_id]
+        "⚠️ **معایب و نکات مهم:**\n"
+        "• احتمال قرمزی و التهاب خفیف تا چند ساعت\n"
+        "• نیاز به چند جلسه برای نتیجه بهتر\n"
+        "• در پوست‌های خیلی حساس ممکن است کمی سوزش ایجاد شود\n"
+        "• باید توسط فرد متخصص انجام شود\n"
+        "• مراقبت‌های بعد از کار بسیار مهم هستند\n"
+    )
 
-    if state["step"] == "ai":
-        bot.send_message(chat_id, "⏳ در حال دریافت پاسخ…")
-        answer = ai_answer(message.text)
-        bot.send_message(chat_id, f"🤖 پاسخ:\n{answer}")
-        del user_state[chat_id]
-        return
+    bot.send_message(chat_id, text)
 
-    if state["step"] == "photo":
-        bot.send_message(chat_id, "⚠️ لطفاً عکس را به صورت Photo ارسال کنید.")
-        return
+# -----------------------------
+# 💆‍♀️ مراقبت‌های قبل و بعد مزووایت
+# -----------------------------
+def send_care_info(chat_id):
+    text = (
+        "💆‍♀️ **مراقبت‌های قبل از مزووایت:**\n"
+        "• نوشیدن آب کافی از ۲۴ ساعت قبل 💧\n"
+        "• عدم مصرف الکل و دخانیات 🚫\n"
+        "• شست‌وشوی ملایم صورت قبل از مراجعه 🧼\n"
+        "• عدم استفاده از کرم‌های سنگین یا لایه‌بردار ❌\n"
+        "• اگر پوست خیلی حساس دارید، اطلاع دهید 🌸\n\n"
 
-    if state["step"] == "name":
-        state["name"] = message.text
-        state["step"] = "phone"
-        bot.send_message(chat_id, "📞 شماره تماس:")
+        "💖 **مراقبت‌های بعد از مزووایت:**\n"
+        "• عدم شست‌وشوی صورت تا ۶–۸ ساعت 🚿❌\n"
+        "• استفاده از کرم ترمیم‌کننده طبق دستور متخصص 🧴\n"
+        "• پرهیز از آفتاب مستقیم تا ۴۸ ساعت ☀️❌\n"
+        "• عدم استفاده از لایه‌بردار، اسکراب یا کرم‌های قوی تا ۳ روز ❌\n"
+        "• نوشیدن آب کافی برای آبرسانی بهتر 💧\n"
+        "• عدم انجام ورزش سنگین تا ۲۴ ساعت 🏃‍♀️❌\n"
+        "• اگر قرمزی یا التهاب داشتید، طبیعی است و طی چند ساعت رفع می‌شود 🌿\n\n"
 
-    elif state["step"] == "phone":
-        state["phone"] = message.text
-        state["step"] = "date"
-        bot.send_message(chat_id, "📅 تاریخ نوبت:")
+        "✨ رعایت این نکات باعث می‌شود نتیجه مزووایت خیلی بهتر و ماندگارتر باشد."
+    )
 
-    elif state["step"] == "date":
-        state["date"] = message.text
+    bot.send_message(chat_id, text)
 
-        bot.send_message(
-            chat_id,
-            f"✅ نوبت شما ثبت شد.\n\n"
-            f"👤 نام: {state['name']}\n"
-            f"📞 شماره: {state['phone']}\n"
-            f"📅 تاریخ: {state['date']}"
-        )
+# -----------------------------
+# 📝 ثبت نوبت
+# -----------------------------
+def get_name(message):
+    user_data[message.chat.id] = {}
+    user_data[message.chat.id]["name"] = message.text
 
-        bot.send_message(
-            ADMIN_ID,
-            f"📥 نوبت جدید:\n"
-            f"👤 نام: {state['name']}\n"
-            f"📞 شماره: {state['phone']}\n"
-            f"📅 تاریخ: {state['date']}\n"
-            f"🔗 آیدی: @{message.from_user.username}"
-        )
+    bot.send_message(message.chat.id, "📞 شماره تماس را وارد کنید:")
+    bot.register_next_step_handler(message, get_phone)
 
-        del user_state[chat_id]
+def get_phone(message):
+    user_data[message.chat.id]["phone"] = message.text
 
-# ---------------- PHOTO RECEIVER ----------------
+    bot.send_message(message.chat.id, "📅 تاریخ مورد نظر را وارد کنید:")
+    bot.register_next_step_handler(message, get_date)
 
+def get_date(message):
+    user_data[message.chat.id]["date"] = message.text
+
+    info = user_data[message.chat.id]
+
+    bot.send_message(
+        message.chat.id,
+        "✅ نوبت شما با موفقیت ثبت شد 🌸\n"
+        "مدیر به‌زودی با شما تماس خواهد گرفت 💕"
+    )
+
+    bot.send_message(
+        ADMIN_ID,
+        f"📥 نوبت جدید:\n\n"
+        f"👤 نام: {info['name']}\n"
+        f"📞 شماره: {info['phone']}\n"
+        f"📅 تاریخ: {info['date']}"
+    )
+
+# -----------------------------
+# 📸 دریافت عکس صورت (اختیاری)
+# -----------------------------
 @bot.message_handler(content_types=['photo'])
-def receive_photo(message):
+def handle_optional_photo(message):
+    try:
+        file_id = message.photo[-1].file_id
 
-    chat_id = message.chat.id
+        bot.send_photo(
+            ADMIN_ID,
+            file_id,
+            caption=f"📸 عکس صورت مشتری\n\n🆔 User ID: {message.chat.id}"
+        )
 
-    if chat_id in user_state and user_state[chat_id]["step"] == "photo":
-        bot.send_message(chat_id, "📸 عکس دریافت شد.")
-        bot.forward_message(ADMIN_ID, chat_id, message.message_id)
-        del user_state[chat_id]
+        bot.reply_to(message, "🌸 عکس صورت شما با موفقیت دریافت شد 💖")
 
+    except Exception as e:
+        bot.reply_to(message, "⚠️ ارسال عکس با خطا مواجه شد.")
+        print("PHOTO ERROR:", e)
+
+# -----------------------------
+# 🤖 پاسخ‌دهی هوشمند با Gemini
+# -----------------------------
+@bot.message_handler(func=lambda m: True)
+def ai_answer(message):
+    user_text = message.text
+    answer = ask_gemini(user_text)
+    bot.reply_to(message, f"🤖 پاسخ هوش مصنوعی:\n\n{answer}")
+
+# -----------------------------
+# ▶️ اجرا
+# -----------------------------
 bot.infinity_polling()
