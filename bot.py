@@ -156,16 +156,18 @@ def get_date(message, user_data):
     )
 
 # -----------------------------
-# 📸 دریافت عکس صورت
+# 📸 دریافت عکس صورت (نسخه اصلاح‌شده)
 # -----------------------------
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
     try:
         file_id = message.photo[-1].file_id
+        file_info = bot.get_file(file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
 
         bot.send_photo(
             ADMIN_ID,
-            file_id,
+            downloaded_file,
             caption=f"📸 عکس صورت مشتری\n🆔 User ID: {message.chat.id}"
         )
 
