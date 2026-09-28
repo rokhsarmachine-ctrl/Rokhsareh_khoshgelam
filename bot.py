@@ -31,6 +31,11 @@ def ask_gemini(prompt):
         return f"⚠️ خطا در Gemini:\n{e}"
 
 # -----------------------------
+# دیتابیس ساده برای ذخیره شماره‌ها
+# -----------------------------
+user_phone_db = {}   # {chat_id: phone_number}
+
+# -----------------------------
 # 🚀 شروع ربات + عکس پروفایل ربات
 # -----------------------------
 @bot.message_handler(commands=['start'])
@@ -139,6 +144,9 @@ def get_name(message):
 def get_phone(message, user_data):
     user_data["phone"] = message.text
 
+    # ذخیره شماره برای استفاده هنگام ارسال عکس
+    user_phone_db[message.chat.id] = message.text
+
     bot.send_message(message.chat.id, "📅 تاریخ مورد نظر را وارد کنید:")
     bot.register_next_step_handler(message, lambda msg: get_date(msg, user_data))
 
@@ -156,7 +164,7 @@ def get_date(message, user_data):
     )
 
 # -----------------------------
-# 📸 دریافت عکس صورت (نسخه اصلاح‌شده)
+# 📸 دریافت عکس صورت (نسخه کامل + شماره + یوزرنیم)
 # -----------------------------
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
@@ -165,10 +173,24 @@ def handle_photo(message):
         file_info = bot.get_file(file_id)
         downloaded_file = bot.download_file(file_info.file_path)
 
+        # یوزرنیم
+        username = message.from_user.username
+        username_text = f"🔹 یوزرنیم: @{username}" if username else "🔹 یوزرنیم: ندارد"
+
+        # شماره تلفن از دیتابیس
+        phone = user_phone_db.get(message.chat.id, None)
+        phone_text = f"🔹 شماره: {phone}" if phone else "🔹 شماره: ثبت نشده"
+
+        # ارسال به ادمین
         bot.send_photo(
             ADMIN_ID,
             downloaded_file,
-            caption=f"📸 عکس صورت مشتری\n🆔 User ID: {message.chat.id}"
+            caption=(
+                "📸 عکس صورت مشتری\n"
+                f"🆔 آیدی: {message.chat.id}\n"
+                f"{username_text}\n"
+                f"{phone_text}"
+            )
         )
 
         bot.reply_to(message, "🌸 عکس صورت شما با موفقیت دریافت شد 💖")
