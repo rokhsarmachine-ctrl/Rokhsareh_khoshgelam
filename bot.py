@@ -83,7 +83,7 @@ def callback(call):
 
     if call.data == "ask":
         bot.send_message(call.message.chat.id,
-            "❓ سؤال خود را بپرس عزیزم، من هوش مصنوعی ربات تلگرامی خدمات مزووایت رخساره خانوم هستم 🥰"
+            " سؤال خود را بپرس عزیزم❓️"
         )
 
     elif call.data == "reserve":
