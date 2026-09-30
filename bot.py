@@ -226,7 +226,7 @@ def ai_answer(message):
         intro = (
             "سلام زیبا جوی عزیز 🌸\n"
             "من هوش مصنوعی ربات تلگرامی خدمات مزووایت رخساره خانوم 🥰 هستم، "
-            "چطور می‌تونم کمکت کنم؟\n\n"
+            
         )
         ai_first_message_sent[chat_id] = True
     else:
