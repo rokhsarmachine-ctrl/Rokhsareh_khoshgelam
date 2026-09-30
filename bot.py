@@ -81,7 +81,7 @@ def main_menu(chat_id):
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.data == "ask":
-        bot.send_message(call.message.chat.id, "❓ سؤال خود را بپرس عزیزم:")
+        bot.send_message(call.message.chat.id, "❓ سؤال خود را بپرس عزیزم من هوش مصنوعی ربات تلگرامی خدمات مزووایت رخساره خانوم🥰 هستم:")
 
     elif call.data == "reserve":
         bot.send_message(call.message.chat.id, "👤 لطفاً نام خود را وارد کنید:")
