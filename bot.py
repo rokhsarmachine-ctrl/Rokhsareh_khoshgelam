@@ -1,29 +1,27 @@
+Me:
 import telebot
 from telebot import types
 import google.generativeai as genai
 import os
 
------------------------------
-
-⚙️ تنظیمات ربات
-
------------------------------
+# -----------------------------
+# ⚙️ تنظیمات ربات
+# -----------------------------
 BOT_TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
 ADMIN_ID = 8070693669
 
-❗ کلید Gemini از Variable خوانده می‌شود
-GEMINIKEY = os.getenv("GEMINIKEY")
+# ❗ کلید Gemini از Variable خوانده می‌شود
+GEMINI_KEY = os.getenv("GEMINI_KEY")
+
 if not GEMINI_KEY:
     raise ValueError("❌ خطا: متغیر GEMINI_KEY در Railway تعریف نشده است!")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
------------------------------
-
-🤖 تنظیمات Gemini
-
------------------------------
-genai.configure(apikey=GEMINIKEY)
+# -----------------------------
+# 🤖 تنظیمات Gemini
+# -----------------------------
+genai.configure(api_key=GEMINI_KEY)
 model = genai.GenerativeModel("gemini-3.5-flash")
 
 def ask_gemini(prompt):
@@ -33,19 +31,9 @@ def ask_gemini(prompt):
     except Exception as e:
         return f"⚠️ خطا در Gemini:\n{e}"
 
------------------------------
-
-دیتابیس ساده
-
------------------------------
-userphonedb = {}
-aifirstmessage_sent = {}
-
------------------------------
-
-🚀 شروع ربات
-
------------------------------
+# -----------------------------
+# 🚀 شروع ربات + عکس پروفایل ربات
+# -----------------------------
 @bot.message_handler(commands=['start'])
 def start(message):
 
@@ -55,26 +43,24 @@ def start(message):
     )
 
     try:
-        botinfo = bot.getme()
-        photos = bot.getuserprofilephotos(botinfo.id)
+        bot_info = bot.get_me()
+        photos = bot.get_user_profile_photos(bot_info.id)
 
         if photos.total_count > 0:
-            fileid = photos.photos[0][0].fileid
-            bot.sendphoto(message.chat.id, fileid, caption=welcome_text)
+            file_id = photos.photos[0][0].file_id
+            bot.send_photo(message.chat.id, file_id, caption=welcome_text)
         else:
-            bot.sendmessage(message.chat.id, welcometext)
+            bot.send_message(message.chat.id, welcome_text)
 
     except:
-        bot.sendmessage(message.chat.id, welcometext)
+        bot.send_message(message.chat.id, welcome_text)
 
     main_menu(message.chat.id)
 
------------------------------
-
-🌸 منوی اصلی
-
------------------------------
-def mainmenu(chatid):
+# -----------------------------
+# 🌸 منوی اصلی
+# -----------------------------
+def main_menu(chat_id):
     markup = types.InlineKeyboardMarkup()
 
     markup.add(types.InlineKeyboardButton("🌸 ❓ پرسیدن سوال - هوش مصنوعی", callback_data="ask"))
@@ -83,41 +69,34 @@ def mainmenu(chatid):
     markup.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
     markup.add(types.InlineKeyboardButton("🌸 💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care"))
 
-    bot.sendmessage(chatid, "لطفاً یکی از گزینه‌های زیر رو انتخاب کن:", reply_markup=markup)
+    bot.send_message(chat_id, "لطفاً یکی از گزینه‌های زیر رو انتخاب کن:", reply_markup=markup)
 
------------------------------
-
-🎛 هندل دکمه‌ها
-
------------------------------
-@bot.callbackqueryhandler(func=lambda call: True)
+# -----------------------------
+# 🎛 هندل دکمه‌ها
+# -----------------------------
+@bot.callback_query_handler(func=lambda call: True)
 def callback(call):
-
     if call.data == "ask":
-        bot.send_message(call.message.chat.id,
-            " سؤال خود را بپرس عزیزم❓️"
-        )
+        bot.send_message(call.message.chat.id, "❓ سؤال خود را بپرس عزیزم:")
 
     elif call.data == "reserve":
         bot.send_message(call.message.chat.id, "👤 لطفاً نام خود را وارد کنید:")
-        bot.registernextstephandler(call.message, getname)
+        bot.register_next_step_handler(call.message, get_name)
 
     elif call.data == "photo":
         bot.send_message(call.message.chat.id, "📸 لطفاً عکس صورت خود را ارسال کنید:")
 
     elif call.data == "mezowhite":
-        sendmezowhiteinfo(call.message.chat.id)
+        send_mezowhite_info(call.message.chat.id)
 
     elif call.data == "care":
-        sendcareinfo(call.message.chat.id)
+        send_care_info(call.message.chat.id)
 
------------------------------
-
-✨ درباره مزووایت
-
------------------------------
-def sendmezowhiteinfo(chat_id):
-    bot.sendmessage(chatid,
+# -----------------------------
+# ✨ درباره مزووایت
+# -----------------------------
+def send_mezowhite_info(chat_id):
+    bot.send_message(chat_id,
         "✨ مزووایت چیست؟\n"
         "روشی برای روشن‌سازی و یکدست‌سازی پوست با تزریق مواد مغذی.\n\n"
         "🌟 مزایا:\n"
@@ -132,13 +111,11 @@ def sendmezowhiteinfo(chat_id):
         "• نیاز به متخصص حرفه‌ای"
     )
 
------------------------------
-
-💆‍♀️ مراقبت‌های قبل و بعد
-
------------------------------
-def sendcareinfo(chat_id):
-    bot.sendmessage(chatid,
+# -----------------------------
+# 💆‍♀️ مراقبت‌های قبل و بعد
+# -----------------------------
+def send_care_info(chat_id):
+    bot.send_message(chat_id,
         "💆‍♀️ قبل از مزووایت:\n"
         "• نوشیدن آب کافی 💧\n"
         "• عدم مصرف الکل 🚫\n"
@@ -151,25 +128,22 @@ def sendcareinfo(chat_id):
         "• نوشیدن آب 💧"
     )
 
------------------------------
-
-📝 ثبت نوبت
-
------------------------------
+# -----------------------------
+# 📝 ثبت نوبت
+# -----------------------------
 def get_name(message):
     user_data = {"name": message.text}
 
     bot.send_message(message.chat.id, "📞 شماره تماس را وارد کنید:")
-    bot.registernextstephandler(message, lambda msg: getphone(msg, user_data))
+    bot.register_next_step_handler(message, lambda msg: get_phone(msg, user_data))
 
-def getphone(message, userdata):
+def get_phone(message, user_data):
     user_data["phone"] = message.text
-    userphonedb[message.chat.id] = message.text
 
     bot.send_message(message.chat.id, "📅 تاریخ مورد نظر را وارد کنید:")
-    bot.registernextstephandler(message, lambda msg: getdate(msg, user_data))
+    bot.register_next_step_handler(message, lambda msg: get_date(msg, user_data))
 
-def getdate(message, userdata):
+def get_date(message, user_data):
     user_data["date"] = message.text
 
     bot.send_message(message.chat.id, "✅ نوبت شما ثبت شد 🌸")
@@ -182,33 +156,18 @@ def getdate(message, userdata):
         f"📅 تاریخ: {user_data['date']}"
     )
 
------------------------------
-
-📸 دریافت عکس صورت
-
------------------------------
-@bot.messagehandler(contenttypes=['photo'])
+# -----------------------------
+# 📸 دریافت عکس صورت
+# -----------------------------
+@bot.message_handler(content_types=['photo'])
 def handle_photo(message):
     try:
-        fileid = message.photo[-1].fileid
-        fileinfo = bot.getfile(file_id)
-        downloadedfile = bot.downloadfile(fileinfo.filepath)
-
-        username = message.from_user.username
-        username_text = f"🔹 یوزرنیم: @{username}" if username else "🔹 یوزرنیم: ندارد"
-
-        phone = userphonedb.get(message.chat.id, None)
-        phone_text = f"🔹 شماره: {phone}" if phone else "🔹 شماره: ثبت نشده"
+        file_id = message.photo[-1].file_id
 
         bot.send_photo(
             ADMIN_ID,
-            downloaded_file,
-            caption=(
-                "📸 عکس صورت مشتری\n"
-                f"🆔 آیدی: {message.chat.id}\n"
-                f"{username_text}\n"
-                f"{phone_text}"
-            )
+            file_id,
+            caption=f"📸 عکس صورت مشتری\n🆔 User ID: {message.chat.id}"
         )
 
         bot.reply_to(message, "🌸 عکس صورت شما با موفقیت دریافت شد 💖")
@@ -216,50 +175,15 @@ def handle_photo(message):
     except Exception as e:
         bot.reply_to(message, f"⚠️ خطا در دریافت عکس:\n{e}")
 
------------------------------
-
-🤖 پاسخ‌دهی هوشمند + معرفی دوباره در صورت درخواست
-
------------------------------
-@bot.messagehandler(contenttypes=['text'])
+# -----------------------------
+# 🤖 پاسخ‌دهی هوشمند با Gemini
+# -----------------------------
+@bot.message_handler(content_types=['text'])
 def ai_answer(message):
-
-    chat_id = message.chat.id
-    text = message.text.strip().lower()
-
-    # لیست کلمات کلیدی معرفی دوباره
-    intro_keywords = [
-        "معرفی", "خودت رو معرفی کن", "تو کی هستی", "کی هستی",
-        "هوش مصنوعی کیه", "ربات کیه", "معرفی کن", "خودتو معرفی کن"
-    ]
-
-    # اگر کاربر درخواست معرفی کرد → همیشه معرفی کن
-    if any(key in text for key in intro_keywords):
-        intro = (
-            "سلام زیبا جوی عزیز 🌸\n"
-            "من هوش مصنوعی خدمات مزووایت ربات تلگرامی رخساره خانوم 🥰 هستم.\n"
-            "در خدمتتم عزیزم 💖\n\n"
-        )
-        bot.reply_to(message, intro)
-        return
-
-    # معرفی فقط اولین بار
-    if not aifirstmessagesent.get(chatid, False):
-        intro = (
-            "سلام زیبا جوی عزیز 🌸\n"
-            "من هوش مصنوعی ربات تلگرامی خدمات مزووایت رخساره خانوم 🥰 هستم، "
-
-        )
-        aifirstmessagesent[chatid] = True
-    else:
-        intro = ""
-
     reply = ask_gemini(message.text)
-    bot.reply_to(message, intro + reply)
+    bot.reply_to(message, reply)
 
------------------------------
-
-▶️ اجرا
-
------------------------------
+# -----------------------------
+# ▶️ اجرا
+# -----------------------------
 bot.infinity_polling()
