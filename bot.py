@@ -1,6 +1,7 @@
 import telebot
 from telebot import types
 import google.generativeai as genai
+from groq import Groq
 import os
 
 # -----------------------------
@@ -9,10 +10,15 @@ import os
 BOT_TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
 ADMIN_ID = 8070693669
 
-# ❗ کلید Gemini از Variable خوانده می‌شود
+# کلیدهای API از Railway
 GEMINI_KEY = os.getenv("GEMINI_KEY")
+GROQ_KEY = os.getenv("GROQ_KEY")
+
 if not GEMINI_KEY:
     raise ValueError("❌ خطا: متغیر GEMINI_KEY در Railway تعریف نشده است!")
+
+if not GROQ_KEY:
+    raise ValueError("❌ خطا: متغیر GROQ_KEY در Railway تعریف نشده است!")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -20,14 +26,44 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # 🤖 تنظیمات Gemini
 # -----------------------------
 genai.configure(api_key=GEMINI_KEY)
-model = genai.GenerativeModel("gemini-3.5-flash")
+gemini_model = genai.GenerativeModel("gemini-3.5-flash")
 
-def ask_gemini(prompt):
+# -----------------------------
+# 🤖 تنظیمات Groq
+# -----------------------------
+groq_client = Groq(api_key=GROQ_KEY)
+
+# -----------------------------
+# 🔄 تابع هوش مصنوعی با سوئیچ خودکار
+# -----------------------------
+def ai_answer_engine(prompt):
+    """
+    اول تلاش می‌کند با Gemini جواب بدهد.
+    اگر خطا داد → به Groq سوئیچ می‌کند.
+    """
+
+    # --- تلاش با Gemini ---
     try:
-        response = model.generate_content(prompt)
+        response = gemini_model.generate_content(prompt)
         return response.text
+
     except Exception as e:
-        return f"⚠️ خطا در Gemini:\n{e}"
+        print("⚠️ خطا در Gemini → سوئیچ به Groq")
+        print(e)
+
+        # --- تلاش با Groq ---
+        try:
+            groq_response = groq_client.chat.completions.create(
+                model="llama-3.1-70b-versatile",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return groq_response.choices[0].message.content
+
+        except Exception as e2:
+            print("❌ خطا در Groq نیز رخ داد")
+            print(e2)
+            return "⚠️ خطا در سیستم هوش مصنوعی. لطفاً دوباره تلاش کنید."
+
 
 # -----------------------------
 # دیتابیس ساده
@@ -82,9 +118,7 @@ def main_menu(chat_id):
 def callback(call):
 
     if call.data == "ask":
-        bot.send_message(call.message.chat.id,
-            " سؤال خود را بپرس عزیزم❓️"
-        )
+        bot.send_message(call.message.chat.id, "❓ سؤال خود را بپرس عزیزم:")
 
     elif call.data == "reserve":
         bot.send_message(call.message.chat.id, "👤 لطفاً نام خود را وارد کنید:")
@@ -197,7 +231,7 @@ def handle_photo(message):
         bot.reply_to(message, f"⚠️ خطا در دریافت عکس:\n{e}")
 
 # -----------------------------
-# 🤖 پاسخ‌دهی هوشمند + معرفی دوباره در صورت درخواست
+# 🤖 پاسخ‌دهی هوشمند
 # -----------------------------
 @bot.message_handler(content_types=['text'])
 def ai_answer(message):
@@ -205,13 +239,11 @@ def ai_answer(message):
     chat_id = message.chat.id
     text = message.text.strip().lower()
 
-    # لیست کلمات کلیدی معرفی دوباره
     intro_keywords = [
         "معرفی", "خودت رو معرفی کن", "تو کی هستی", "کی هستی",
         "هوش مصنوعی کیه", "ربات کیه", "معرفی کن", "خودتو معرفی کن"
     ]
 
-    # اگر کاربر درخواست معرفی کرد → همیشه معرفی کن
     if any(key in text for key in intro_keywords):
         intro = (
             "سلام زیبا جوی عزیز 🌸\n"
@@ -221,18 +253,16 @@ def ai_answer(message):
         bot.reply_to(message, intro)
         return
 
-    # معرفی فقط اولین بار
     if not ai_first_message_sent.get(chat_id, False):
         intro = (
             "سلام زیبا جوی عزیز 🌸\n"
             "من هوش مصنوعی ربات تلگرامی خدمات مزووایت رخساره خانوم 🥰 هستم، "
-            
         )
         ai_first_message_sent[chat_id] = True
     else:
         intro = ""
 
-    reply = ask_gemini(message.text)
+    reply = ai_answer_engine(message.text)
     bot.reply_to(message, intro + reply)
 
 # -----------------------------
