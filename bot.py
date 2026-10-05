@@ -1,6 +1,5 @@
 import telebot
 from telebot import types
-import google.generativeai as genai
 from groq import Groq
 import os
 
@@ -10,12 +9,8 @@ import os
 BOT_TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
 ADMIN_ID = 8070693669
 
-# کلیدهای API از Railway
-GEMINI_KEY = os.getenv("GEMINI_KEY")
+# کلید API از Railway
 GROQ_KEY = os.getenv("GROQ_KEY")
-
-if not GEMINI_KEY:
-    raise ValueError("❌ خطا: متغیر GEMINI_KEY در Railway تعریف نشده است!")
 
 if not GROQ_KEY:
     raise ValueError("❌ خطا: متغیر GROQ_KEY در Railway تعریف نشده است!")
@@ -23,40 +18,28 @@ if not GROQ_KEY:
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # -----------------------------
-# 🤖 تنظیمات Gemini
-# -----------------------------
-genai.configure(api_key=GEMINI_KEY)
-gemini_model = genai.GenerativeModel("gemini-3.5-flash")
-
-# -----------------------------
 # 🤖 تنظیمات Groq
 # -----------------------------
 groq_client = Groq(api_key=GROQ_KEY)
 
 # -----------------------------
-# 🔄 تابع هوش مصنوعی با سوئیچ مخفی
+# 🔄 تابع هوش مصنوعی (فقط Groq)
 # -----------------------------
 def ai_answer_engine(prompt):
     """
-    اول تلاش با Gemini
-    اگر خطا داد → سوئیچ مخفی به Groq
-    هیچ‌جا مشخص نمی‌شود کدام مدل پاسخ داده
+    فقط Groq پاسخ می‌دهد.
+    هیچ‌جا مشخص نمی‌شود که چه مدل هوش مصنوعی است.
     """
 
     try:
-        response = gemini_model.generate_content(prompt)
-        return response.text
+        groq_response = groq_client.chat.completions.create(
+            model="llama-3.1-70b-versatile",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return groq_response.choices[0].message.content
 
-    except:
-        try:
-            groq_response = groq_client.chat.completions.create(
-                model="llama-3.1-70b-versatile",
-                messages=[{"role": "user", "content": prompt}]
-            )
-            return groq_response.choices[0].message.content
-
-        except:
-            return "عزیزم یه مشکلی کوچولو پیش اومد… دوباره امتحان کن 🌸"
+    except Exception:
+        return "عزیزم یه مشکلی کوچولو پیش اومد… دوباره امتحان کن 🌸"
 
 
 # -----------------------------
