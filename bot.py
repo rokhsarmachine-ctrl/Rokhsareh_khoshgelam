@@ -34,22 +34,36 @@ gemini_model = genai.GenerativeModel("gemini-3.5-flash")
 groq_client = Groq(api_key=GROQ_KEY)
 
 # -----------------------------
-# 🔄 تابع هوش مصنوعی با سوئیچ خودکار
+# 🔄 تابع هوش مصنوعی با سوئیچ خودکار + معرفی دخترانه
 # -----------------------------
 def ai_answer_engine(prompt):
     """
     اول تلاش می‌کند با Gemini جواب بدهد.
-    اگر خطا داد → به Groq سوئیچ می‌کند.
+    اگر خطا داد → به Groq سوئیچ می‌کند و معرفی دخترانه انجام می‌دهد.
     """
 
     # --- تلاش با Gemini ---
     try:
         response = gemini_model.generate_content(prompt)
-        return response.text
+        return (
+            "سلام زیبای من 🌸\n"
+            "من هوش مصنوعی Gemini هستم، همون رخساره خانوم مهربون 🥰\n"
+            "با عشق کنارتم تا بهترین پاسخ رو بدم عزیزم 💖\n\n"
+            + response.text
+        )
 
     except Exception as e:
         print("⚠️ خطا در Gemini → سوئیچ به Groq")
         print(e)
+
+        # --- معرفی Groq ---
+        groq_intro = (
+            "سلام عزیز دلم 🌸\n"
+            "یه لحظه کوچولو Gemini قهر کرد 😅 ولی نگران نباش عزیزم.\n"
+            "من الان با هوش مصنوعی Groq در خدمتتم 🥰\n"
+            "همون رخساره خانومم، با همون مهربونی و دقت 💖✨\n"
+            "بیا ادامه بدیم قربونت برم 🌸\n\n"
+        )
 
         # --- تلاش با Groq ---
         try:
@@ -57,12 +71,14 @@ def ai_answer_engine(prompt):
                 model="llama-3.1-70b-versatile",
                 messages=[{"role": "user", "content": prompt}]
             )
-            return groq_response.choices[0].message.content
+
+            answer = groq_response.choices[0].message.content
+            return groq_intro + answer
 
         except Exception as e2:
             print("❌ خطا در Groq نیز رخ داد")
             print(e2)
-            return "⚠️ خطا در سیستم هوش مصنوعی. لطفاً دوباره تلاش کنید."
+            return "⚠️ عزیزم یه مشکلی کوچولو پیش اومد… دوباره امتحان کن 💖"
 
 
 # -----------------------------
@@ -109,7 +125,7 @@ def main_menu(chat_id):
     markup.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
     markup.add(types.InlineKeyboardButton("🌸 💆‍♀️ مراقبت‌های قبل و بعد", callback_data="care"))
 
-    bot.send_message(chat_id, "لطفاً یکی از گزینه‌های زیر رو انتخاب کن:", reply_markup=markup)
+    bot.send_message(chat_id, "عزیزم یکی از گزینه‌های زیر رو انتخاب کن 🌸", reply_markup=markup)
 
 # -----------------------------
 # 🎛 هندل دکمه‌ها
@@ -118,14 +134,14 @@ def main_menu(chat_id):
 def callback(call):
 
     if call.data == "ask":
-        bot.send_message(call.message.chat.id, "❓ سؤال خود را بپرس عزیزم:")
+        bot.send_message(call.message.chat.id, "❓ عزیزم سوالت رو بپرس:")
 
     elif call.data == "reserve":
-        bot.send_message(call.message.chat.id, "👤 لطفاً نام خود را وارد کنید:")
+        bot.send_message(call.message.chat.id, "👤 اسم خوشگلت رو بگو عزیزم:")
         bot.register_next_step_handler(call.message, get_name)
 
     elif call.data == "photo":
-        bot.send_message(call.message.chat.id, "📸 لطفاً عکس صورت خود را ارسال کنید:")
+        bot.send_message(call.message.chat.id, "📸 قربونت، عکس صورتت رو بفرست:")
 
     elif call.data == "mezowhite":
         send_mezowhite_info(call.message.chat.id)
@@ -138,14 +154,14 @@ def callback(call):
 # -----------------------------
 def send_mezowhite_info(chat_id):
     bot.send_message(chat_id,
-        "✨ **مزووایت چیست؟**\n"
-        "روشی برای روشن‌سازی و یکدست‌سازی پوست با تزریق مواد مغذی.\n\n"
-        "🌟 **مزایا:**\n"
+        "✨ عزیزم مزووایت یه روش فوق‌العاده برای روشن‌سازی و یکدست‌سازی پوستته 🌸\n"
+        "با تزریق مواد مغذی، پوستت مثل گل شکوفه می‌کنه 💖✨\n\n"
+        "🌟 مزایا:\n"
         "• روشن‌تر شدن پوست\n"
         "• کاهش لک‌ها\n"
         "• آبرسانی قوی\n"
         "• یکدست شدن رنگ پوست\n\n"
-        "⚠️ **معایب:**\n"
+        "⚠️ معایب کوچولو:\n"
         "• قرمزی چند ساعته\n"
         "• نیاز به چند جلسه\n"
         "• احتمال سوزش\n"
@@ -157,16 +173,16 @@ def send_mezowhite_info(chat_id):
 # -----------------------------
 def send_care_info(chat_id):
     bot.send_message(chat_id,
-        "💆‍♀️ **قبل از مزووایت:**\n"
-        "• نوشیدن آب کافی 💧\n"
-        "• عدم مصرف الکل 🚫\n"
-        "• شست‌وشوی ملایم صورت 🧼\n\n"
-        "💖 **بعد از مزووایت:**\n"
-        "• عدم شست‌وشوی صورت تا ۸ ساعت 🚿❌\n"
-        "• کرم ترمیم‌کننده 🧴\n"
-        "• دوری از آفتاب ☀️❌\n"
-        "• عدم لایه‌بردار تا ۳ روز ❌\n"
-        "• نوشیدن آب 💧"
+        "💆‍♀️ عزیزم قبل از مزووایت:\n"
+        "• آب کافی بخور 💧\n"
+        "• الکل نخور 🚫\n"
+        "• صورتت رو ملایم بشور 🧼\n\n"
+        "💖 بعد از مزووایت:\n"
+        "• تا ۸ ساعت صورتت رو نشور 🚿❌\n"
+        "• کرم ترمیم‌کننده بزن 🧴\n"
+        "• از آفتاب دوری کن ☀️❌\n"
+        "• لایه‌بردار نزن تا ۳ روز ❌\n"
+        "• آب زیاد بخور 💧"
     )
 
 # -----------------------------
@@ -175,20 +191,20 @@ def send_care_info(chat_id):
 def get_name(message):
     user_data = {"name": message.text}
 
-    bot.send_message(message.chat.id, "📞 شماره تماس را وارد کنید:")
+    bot.send_message(message.chat.id, "📞 عزیزم شماره تماس رو بفرست:")
     bot.register_next_step_handler(message, lambda msg: get_phone(msg, user_data))
 
 def get_phone(message, user_data):
     user_data["phone"] = message.text
     user_phone_db[message.chat.id] = message.text
 
-    bot.send_message(message.chat.id, "📅 تاریخ مورد نظر را وارد کنید:")
+    bot.send_message(message.chat.id, "📅 تاریخ مورد نظرت رو بگو عزیزم:")
     bot.register_next_step_handler(message, lambda msg: get_date(msg, user_data))
 
 def get_date(message, user_data):
     user_data["date"] = message.text
 
-    bot.send_message(message.chat.id, "✅ نوبت شما ثبت شد 🌸")
+    bot.send_message(message.chat.id, "✅ نوبتت با موفقیت ثبت شد عزیزم 🌸")
 
     bot.send_message(
         ADMIN_ID,
@@ -225,10 +241,10 @@ def handle_photo(message):
             )
         )
 
-        bot.reply_to(message, "🌸 عکس صورت شما با موفقیت دریافت شد 💖")
+        bot.reply_to(message, "🌸 قربونت، عکس صورتت رسید 💖")
 
     except Exception as e:
-        bot.reply_to(message, f"⚠️ خطا در دریافت عکس:\n{e}")
+        bot.reply_to(message, f"⚠️ عزیزم یه مشکلی پیش اومد:\n{e}")
 
 # -----------------------------
 # 🤖 پاسخ‌دهی هوشمند
@@ -246,17 +262,17 @@ def ai_answer(message):
 
     if any(key in text for key in intro_keywords):
         intro = (
-            "سلام زیبا جوی عزیز 🌸\n"
-            "من هوش مصنوعی خدمات مزووایت ربات تلگرامی رخساره خانوم 🥰 هستم.\n"
-            "در خدمتتم عزیزم 💖\n\n"
+            "سلام زیبای من 🌸\n"
+            "من هوش مصنوعی ربات مزووایت رخساره خانوم هستم 🥰\n"
+            "با عشق کنارتم عزیزم 💖\n\n"
         )
         bot.reply_to(message, intro)
         return
 
     if not ai_first_message_sent.get(chat_id, False):
         intro = (
-            "سلام زیبا جوی عزیز 🌸\n"
-            "من هوش مصنوعی ربات تلگرامی خدمات مزووایت رخساره خانوم 🥰 هستم، "
+            "سلام زیبای من 🌸\n"
+            "من رخساره خانوم هستم، هوش مصنوعی ربات مزووایت 🥰 "
         )
         ai_first_message_sent[chat_id] = True
     else:
