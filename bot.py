@@ -1,4 +1,3 @@
-Me:
 import telebot
 from telebot import types
 import google.generativeai as genai
@@ -12,7 +11,6 @@ ADMIN_ID = 8070693669
 
 # ❗ کلید Gemini از Variable خوانده می‌شود
 GEMINI_KEY = os.getenv("GEMINI_KEY")
-
 if not GEMINI_KEY:
     raise ValueError("❌ خطا: متغیر GEMINI_KEY در Railway تعریف نشده است!")
 
@@ -32,7 +30,13 @@ def ask_gemini(prompt):
         return f"⚠️ خطا در Gemini:\n{e}"
 
 # -----------------------------
-# 🚀 شروع ربات + عکس پروفایل ربات
+# دیتابیس ساده
+# -----------------------------
+user_phone_db = {}
+ai_first_message_sent = {}
+
+# -----------------------------
+# 🚀 شروع ربات
 # -----------------------------
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -76,8 +80,11 @@ def main_menu(chat_id):
 # -----------------------------
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
+
     if call.data == "ask":
-        bot.send_message(call.message.chat.id, "❓ سؤال خود را بپرس عزیزم:")
+        bot.send_message(call.message.chat.id,
+            "❓ سؤال خود را بپرس عزیزم، من هوش مصنوعی ربات تلگرامی خدمات مزووایت رخساره خانوم هستم 🥰"
+        )
 
     elif call.data == "reserve":
         bot.send_message(call.message.chat.id, "👤 لطفاً نام خود را وارد کنید:")
@@ -97,14 +104,14 @@ def callback(call):
 # -----------------------------
 def send_mezowhite_info(chat_id):
     bot.send_message(chat_id,
-        "✨ مزووایت چیست؟\n"
+        "✨ **مزووایت چیست؟**\n"
         "روشی برای روشن‌سازی و یکدست‌سازی پوست با تزریق مواد مغذی.\n\n"
-        "🌟 مزایا:\n"
+        "🌟 **مزایا:**\n"
         "• روشن‌تر شدن پوست\n"
         "• کاهش لک‌ها\n"
         "• آبرسانی قوی\n"
         "• یکدست شدن رنگ پوست\n\n"
-        "⚠️ معایب:\n"
+        "⚠️ **معایب:**\n"
         "• قرمزی چند ساعته\n"
         "• نیاز به چند جلسه\n"
         "• احتمال سوزش\n"
@@ -116,11 +123,11 @@ def send_mezowhite_info(chat_id):
 # -----------------------------
 def send_care_info(chat_id):
     bot.send_message(chat_id,
-        "💆‍♀️ قبل از مزووایت:\n"
+        "💆‍♀️ **قبل از مزووایت:**\n"
         "• نوشیدن آب کافی 💧\n"
         "• عدم مصرف الکل 🚫\n"
         "• شست‌وشوی ملایم صورت 🧼\n\n"
-        "💖 بعد از مزووایت:\n"
+        "💖 **بعد از مزووایت:**\n"
         "• عدم شست‌وشوی صورت تا ۸ ساعت 🚿❌\n"
         "• کرم ترمیم‌کننده 🧴\n"
         "• دوری از آفتاب ☀️❌\n"
@@ -139,6 +146,7 @@ def get_name(message):
 
 def get_phone(message, user_data):
     user_data["phone"] = message.text
+    user_phone_db[message.chat.id] = message.text
 
     bot.send_message(message.chat.id, "📅 تاریخ مورد نظر را وارد کنید:")
     bot.register_next_step_handler(message, lambda msg: get_date(msg, user_data))
@@ -163,11 +171,24 @@ def get_date(message, user_data):
 def handle_photo(message):
     try:
         file_id = message.photo[-1].file_id
+        file_info = bot.get_file(file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+
+        username = message.from_user.username
+        username_text = f"🔹 یوزرنیم: @{username}" if username else "🔹 یوزرنیم: ندارد"
+
+        phone = user_phone_db.get(message.chat.id, None)
+        phone_text = f"🔹 شماره: {phone}" if phone else "🔹 شماره: ثبت نشده"
 
         bot.send_photo(
             ADMIN_ID,
-            file_id,
-            caption=f"📸 عکس صورت مشتری\n🆔 User ID: {message.chat.id}"
+            downloaded_file,
+            caption=(
+                "📸 عکس صورت مشتری\n"
+                f"🆔 آیدی: {message.chat.id}\n"
+                f"{username_text}\n"
+                f"{phone_text}"
+            )
         )
 
         bot.reply_to(message, "🌸 عکس صورت شما با موفقیت دریافت شد 💖")
@@ -176,12 +197,43 @@ def handle_photo(message):
         bot.reply_to(message, f"⚠️ خطا در دریافت عکس:\n{e}")
 
 # -----------------------------
-# 🤖 پاسخ‌دهی هوشمند با Gemini
+# 🤖 پاسخ‌دهی هوشمند + معرفی دوباره در صورت درخواست
 # -----------------------------
 @bot.message_handler(content_types=['text'])
 def ai_answer(message):
+
+    chat_id = message.chat.id
+    text = message.text.strip().lower()
+
+    # لیست کلمات کلیدی معرفی دوباره
+    intro_keywords = [
+        "معرفی", "خودت رو معرفی کن", "تو کی هستی", "کی هستی",
+        "هوش مصنوعی کیه", "ربات کیه", "معرفی کن", "خودتو معرفی کن"
+    ]
+
+    # اگر کاربر درخواست معرفی کرد → همیشه معرفی کن
+    if any(key in text for key in intro_keywords):
+        intro = (
+            "سلام زیبا جوی عزیز 🌸\n"
+            "من هوش مصنوعی خدمات مزووایت ربات تلگرامی رخساره خانوم 🥰 هستم.\n"
+            "در خدمتتم عزیزم 💖\n\n"
+        )
+        bot.reply_to(message, intro)
+        return
+
+    # معرفی فقط اولین بار
+    if not ai_first_message_sent.get(chat_id, False):
+        intro = (
+            "سلام زیبا جوی عزیز 🌸\n"
+            "من هوش مصنوعی ربات تلگرامی خدمات مزووایت رخساره خانوم 🥰 هستم، "
+            "چطور می‌تونم کمکت کنم؟\n\n"
+        )
+        ai_first_message_sent[chat_id] = True
+    else:
+        intro = ""
+
     reply = ask_gemini(message.text)
-    bot.reply_to(message, reply)
+    bot.reply_to(message, intro + reply)
 
 # -----------------------------
 # ▶️ اجرا
