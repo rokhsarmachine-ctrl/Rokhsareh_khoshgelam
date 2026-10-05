@@ -34,51 +34,29 @@ gemini_model = genai.GenerativeModel("gemini-3.5-flash")
 groq_client = Groq(api_key=GROQ_KEY)
 
 # -----------------------------
-# 🔄 تابع هوش مصنوعی با سوئیچ خودکار + معرفی دخترانه
+# 🔄 تابع هوش مصنوعی با سوئیچ مخفی
 # -----------------------------
 def ai_answer_engine(prompt):
     """
-    اول تلاش می‌کند با Gemini جواب بدهد.
-    اگر خطا داد → به Groq سوئیچ می‌کند و معرفی دخترانه انجام می‌دهد.
+    اول تلاش با Gemini
+    اگر خطا داد → سوئیچ مخفی به Groq
+    هیچ‌جا مشخص نمی‌شود کدام مدل پاسخ داده
     """
 
-    # --- تلاش با Gemini ---
     try:
         response = gemini_model.generate_content(prompt)
-        return (
-            "سلام زیبای من 🌸\n"
-            "من هوش مصنوعی هستم، همون رخساره خانوم مهربون 🥰\n"
-            "با مهربونی کنارتم تا بهترین پاسخ رو بدم عزیزم 💖\n\n"
-            + response.text
-        )
+        return response.text
 
-    except Exception as e:
-        print("⚠️ خطا در Gemini → سوئیچ به Groq")
-        print(e)
-
-        # --- معرفی Groq ---
-        groq_intro = (
-            "سلام عزیز دلم 🌸\n"
-            "یه لحظه 😅 ولی نگران نباش عزیزم.\n"
-            "من الان با هوش مصنوعی در خدمتتم 🥰\n"
-            "همون رخساره خانومم، با همون مهربونی و دقت 💖✨\n"
-            "بیا ادامه بدیم قربونت برم 🌸\n\n"
-        )
-
-        # --- تلاش با Groq ---
+    except:
         try:
             groq_response = groq_client.chat.completions.create(
                 model="llama-3.1-70b-versatile",
                 messages=[{"role": "user", "content": prompt}]
             )
+            return groq_response.choices[0].message.content
 
-            answer = groq_response.choices[0].message.content
-            return groq_intro + answer
-
-        except Exception as e2:
-            print("❌ خطا در Groq نیز رخ داد")
-            print(e2)
-            return "⚠️ عزیزم یه مشکلی کوچولو پیش اومد… دوباره امتحان کن 💖"
+        except:
+            return "عزیزم یه مشکلی کوچولو پیش اومد… دوباره امتحان کن 🌸"
 
 
 # -----------------------------
@@ -119,7 +97,7 @@ def start(message):
 def main_menu(chat_id):
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(types.InlineKeyboardButton("🌸 ❓ پرسیدن سوال - هوش مصنوعی", callback_data="ask"))
+    markup.add(types.InlineKeyboardButton("🌸 ❓ پرسیدن سوال", callback_data="ask"))
     markup.add(types.InlineKeyboardButton("🌸 🗓 ثبت نوبت", callback_data="reserve"))
     markup.add(types.InlineKeyboardButton("🌸 📸 ارسال عکس صورت", callback_data="photo"))
     markup.add(types.InlineKeyboardButton("🌸 ✨ درباره مزووایت", callback_data="mezowhite"))
@@ -263,7 +241,7 @@ def ai_answer(message):
     if any(key in text for key in intro_keywords):
         intro = (
             "سلام زیبای من 🌸\n"
-            "من هوش مصنوعی ربات مزووایت رخساره خانوم هستم 🥰\n"
+            "من هوش مصنوعی ربات خدمات مزووایت رخساره خانوم 🥰 هستم.\n"
             "با عشق کنارتم عزیزم 💖\n\n"
         )
         bot.reply_to(message, intro)
@@ -272,7 +250,7 @@ def ai_answer(message):
     if not ai_first_message_sent.get(chat_id, False):
         intro = (
             "سلام زیبای من 🌸\n"
-            "من رخساره خانوم هستم، هوش مصنوعی ربات مزووایت 🥰 "
+            "من هوش مصنوعی ربات خدمات مزووایت رخساره خانوم 🥰 هستم، "
         )
         ai_first_message_sent[chat_id] = True
     else:
