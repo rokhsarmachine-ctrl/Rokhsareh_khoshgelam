@@ -6,7 +6,7 @@ import os
 # -----------------------------
 # ⚙️ تنظیمات ربات
 # -----------------------------
-BOT_TOKEN = "8860048564:AAFJLbLpblSRBfImGzbBGgw1PI7izGUZvNk"
+BOT_TOKEN = "8860048564:AAHo1-PfILpklUfuVOZU-maKqhepF7da7mw"
 ADMIN_ID = 8070693669
 
 # ❗ کلید Gemini از Variable خوانده می‌شود
